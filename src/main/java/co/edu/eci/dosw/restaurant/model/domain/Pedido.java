@@ -1,6 +1,6 @@
 package co.edu.eci.dosw.restaurant.model.domain;
 
-import co.edu.eci.dosw.restaurant.model.enums.EstadoPedido;
+import co.edu.eci.dosw.restaurant.model.domain.enums.EstadoPedido;
 
 public class Pedido {
     private EstadoPedido estado = EstadoPedido.RECIBIDO;

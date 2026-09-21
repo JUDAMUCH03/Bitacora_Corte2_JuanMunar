@@ -1,6 +1,6 @@
 package co.edu.eci.dosw.restaurant.model.domain;
 
-import co.edu.eci.dosw.restaurant.model.enums.EstadoMesa;
+import co.edu.eci.dosw.restaurant.model.domain.enums.EstadoMesa;
 
 public class Mesa {
     private EstadoMesa estado = EstadoMesa.DISPONIBLE;

@@ -1,4 +1,4 @@
-package co.edu.eci.dosw.restaurant.model.enums;
+package co.edu.eci.dosw.restaurant.model.domain.enums;
 
 public enum EstadoCuenta {
     ABIERTA,
