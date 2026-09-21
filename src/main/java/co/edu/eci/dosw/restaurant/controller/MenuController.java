@@ -3,7 +3,7 @@ package co.edu.eci.dosw.restaurant.controller;
 import co.edu.eci.dosw.restaurant.controller.docs.MenuApi;
 import co.edu.eci.dosw.restaurant.dto.response.PlatoResponseDTO;
 import co.edu.eci.dosw.restaurant.exception.RecursoNoEncontradoException;
-import co.edu.eci.dosw.restaurant.mapper.out.PlatoMapperOut;
+import co.edu.eci.dosw.restaurant.mapper.out.PlatoMapper;
 import co.edu.eci.dosw.restaurant.model.domain.Plato;
 import co.edu.eci.dosw.restaurant.service.IPlatoService;
 import lombok.RequiredArgsConstructor;
@@ -20,7 +20,7 @@ import java.util.List;
 public class MenuController implements MenuApi {
 
     private final IPlatoService platoService;
-    private final PlatoMapperOut mapperOut;
+    private final PlatoMapper mapperOut;
 
     @Override
     @GetMapping
@@ -35,13 +35,11 @@ public class MenuController implements MenuApi {
     public ResponseEntity<PlatoResponseDTO> verDetalle(@PathVariable Long id) {
         log.info("REST: GET /api/v1/menu/{} - Detalle de producto", id);
         Plato plato = platoService.obtenerPorId(id);
-        
         if (!plato.estaDisponible()) {
             throw new RecursoNoEncontradoException(
                     String.format("El cóctel o plato con id=%d se encuentra agotado en barra", id)
             );
         }
-        
         return ResponseEntity.ok(mapperOut.toResponse(plato));
     }
 

@@ -149,6 +149,18 @@
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
                 <version>${jacoco.version}</version>
+                <configuration>
+                    <excludes>
+                        <!-- Clases de configuración y arranque Spring -->
+                        <exclude>co/edu/eci/dosw/restaurant/config/**</exclude>
+                        <exclude>co/edu/eci/dosw/restaurant/*Application.class</exclude>
+                        <!-- DTOs y Mappers generados -->
+                        <exclude>co/edu/eci/dosw/restaurant/dto/**</exclude>
+                        <exclude>co/edu/eci/dosw/restaurant/mapper/**</exclude>
+                        <!-- Controladores delgados (probados vía integración/Postman) -->
+                        <exclude>co/edu/eci/dosw/restaurant/controller/**</exclude>
+                    </excludes>
+                </configuration>
                 <executions>
                     <execution>
                         <goals>
@@ -167,7 +179,6 @@
                     </execution>
                 </executions>
             </plugin>
-
             <!-- Análisis Estático SonarQube -->
             <plugin>
                 <groupId>org.sonarsource.scanner.maven</groupId>

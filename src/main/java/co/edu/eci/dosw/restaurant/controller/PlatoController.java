@@ -3,8 +3,6 @@ package co.edu.eci.dosw.restaurant.controller;
 import co.edu.eci.dosw.restaurant.controller.docs.PlatoApi;
 import co.edu.eci.dosw.restaurant.dto.request.PlatoRequestDTO;
 import co.edu.eci.dosw.restaurant.dto.response.PlatoResponseDTO;
-import co.edu.eci.dosw.restaurant.mapper.in.PlatoMapperIn;
-import co.edu.eci.dosw.restaurant.mapper.out.PlatoMapperOut;
 import co.edu.eci.dosw.restaurant.model.domain.Plato;
 import co.edu.eci.dosw.restaurant.service.IPlatoService;
 import jakarta.validation.Valid;
@@ -23,8 +21,8 @@ import java.util.List;
 public class PlatoController implements PlatoApi {
 
     private final IPlatoService platoService;
-    private final PlatoMapperIn mapperIn;
-    private final PlatoMapperOut mapperOut;
+    private final co.edu.eci.dosw.restaurant.mapper.in.PlatoMapper mapperIn;
+    private final co.edu.eci.dosw.restaurant.mapper.out.PlatoMapper mapperOut;
 
     @Override
     @GetMapping
@@ -46,14 +44,8 @@ public class PlatoController implements PlatoApi {
     @PostMapping
     public ResponseEntity<PlatoResponseDTO> crear(@RequestBody @Valid PlatoRequestDTO dto) {
         log.info("REST: POST /api/v1/platos - Nombre='{}'", dto.getNombre());
-        
-        // 1. MapperIn: DTO -> Dominio
         Plato nuevoPlato = mapperIn.toDomain(dto);
-        
-        // 2. Delegación a la lógica de negocio
         Plato creado = platoService.crear(nuevoPlato);
-        
-        // 3. MapperOut y código 201 Created
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(mapperOut.toResponse(creado));
     }
@@ -84,7 +76,6 @@ public class PlatoController implements PlatoApi {
     public ResponseEntity<Void> eliminar(@PathVariable Long id) {
         log.info("REST: DELETE /api/v1/platos/{}", id);
         platoService.eliminar(id);
-        // DELETE exitoso retorna 204 No Content sin cuerpo
         return ResponseEntity.noContent().build();
     }
 }

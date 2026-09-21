@@ -6,7 +6,7 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
 @Mapper(componentModel = "spring")
-public interface PlatoMapperIn {
+public interface PlatoMapper {
 
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "disponible", constant = "true")
