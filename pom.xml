@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 
@@ -15,47 +16,70 @@
     <artifactId>restaurant-backend</artifactId>
     <version>1.0.0-SNAPSHOT</version>
     <name>restaurant-backend</name>
-    <description>Sistema de Gestión de Restaurante - DOSW Corte 2</description>
+    <description>Blue Velvet — Sistema de Gestión y KDS de Coctelería de Autor (DOSW)</description>
 
     <properties>
         <java.version>21</java.version>
-        <jacoco.version>0.8.11</jacoco.version>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+        
+        <!-- Versiones de dependencias y plugins -->
         <mapstruct.version>1.5.5.Final</mapstruct.version>
-        <lombok.version>1.18.32</lombok.version>
+        <lombok.version>1.18.36</lombok.version>
         <lombok-mapstruct-binding.version>0.2.0</lombok-mapstruct-binding.version>
+        <springdoc.version>2.5.0</springdoc.version>
+        <jacoco.version>0.8.12</jacoco.version>
+        <sonar.version>3.11.0.3922</sonar.version>
+        
+        <!-- Propiedades de análisis estático SonarQube -->
+        <sonar.java.coveragePlugin>jacoco</sonar.java.coveragePlugin>
+        <sonar.dynamicAnalysis>reuseReports</sonar.dynamicAnalysis>
+        <sonar.jacoco.reportPath>${project.build.directory}/jacoco.exec</sonar.jacoco.reportPath>
+        <sonar.language>java</sonar.language>
+        <sonar.exclusions>
+            **/config/**,
+            **/dto/**,
+            **/model/domain/**,
+            **/exception/**,
+            **/mapper/**
+        </sonar.exclusions>
     </properties>
 
     <dependencies>
-        <!-- Spring Boot Starters -->
+        <!-- ── Spring Boot Starters ── -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
+        
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-validation</artifactId>
         </dependency>
+
+        <!-- ── Documentación Swagger / OpenAPI 3 ── -->
         <dependency>
             <groupId>org.springdoc</groupId>
             <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
-            <version>2.5.0</version>
+            <version>${springdoc.version}</version>
         </dependency>
 
-        <!-- Lombok -->
+        <!-- ── Lombok ── -->
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
-            <optional>true</optional>
+            <version>${lombok.version}</version>
+            <scope>provided</scope>
         </dependency>
 
-        <!-- MapStruct -->
+        <!-- ── MapStruct ── -->
         <dependency>
             <groupId>org.mapstruct</groupId>
             <artifactId>mapstruct</artifactId>
             <version>${mapstruct.version}</version>
         </dependency>
 
-        <!-- Testing Harness -->
+        <!-- ── Testing: JUnit 5, Mockito, AssertJ ── -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
@@ -65,6 +89,7 @@
 
     <build>
         <plugins>
+            <!-- Empaquetado ejecutable Spring Boot -->
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
@@ -77,33 +102,49 @@
                     </excludes>
                 </configuration>
             </plugin>
+
+            <!-- Compilador y Procesadores de Anotaciones -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.13.0</version>
                 <configuration>
-                    <source>${java.version}</source>
-                    <target>${java.version}</target>
+                    <release>${java.version}</release>
                     <annotationProcessorPaths>
+                        <!-- 1. Lombok genera getters/setters/builders en el AST -->
                         <path>
                             <groupId>org.projectlombok</groupId>
                             <artifactId>lombok</artifactId>
                             <version>${lombok.version}</version>
                         </path>
-                        <path>
-                            <groupId>org.mapstruct</groupId>
-                            <artifactId>mapstruct-processor</artifactId>
-                            <version>${mapstruct.version}</version>
-                        </path>
+                        <!-- 2. Sincroniza Lombok y MapStruct evitando colisiones -->
                         <path>
                             <groupId>org.projectlombok</groupId>
                             <artifactId>lombok-mapstruct-binding</artifactId>
                             <version>${lombok-mapstruct-binding.version}</version>
                         </path>
+                        <!-- 3. MapStruct genera implementaciones sobre código generado -->
+                        <path>
+                            <groupId>org.mapstruct</groupId>
+                            <artifactId>mapstruct-processor</artifactId>
+                            <version>${mapstruct.version}</version>
+                        </path>
                     </annotationProcessorPaths>
                 </configuration>
             </plugin>
-            
-            <!-- Análisis de Cobertura de Código -->
+
+            <!-- Ejecución de Pruebas Unitarias -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>3.2.5</version>
+                <configuration>
+                    <!-- Inyecta el agente de JaCoCo en la JVM de pruebas -->
+                    <argLine>${argLine}</argLine>
+                </configuration>
+            </plugin>
+
+            <!-- Cobertura de Código con JaCoCo -->
             <plugin>
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
@@ -120,8 +161,18 @@
                         <goals>
                             <goal>report</goal>
                         </goals>
+                        <configuration>
+                            <outputDirectory>${project.reporting.outputDirectory}/jacoco</outputDirectory>
+                        </configuration>
                     </execution>
                 </executions>
+            </plugin>
+
+            <!-- Análisis Estático SonarQube -->
+            <plugin>
+                <groupId>org.sonarsource.scanner.maven</groupId>
+                <artifactId>sonar-maven-plugin</artifactId>
+                <version>${sonar.version}</version>
             </plugin>
         </plugins>
     </build>
