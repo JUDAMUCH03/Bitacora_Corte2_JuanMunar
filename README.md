@@ -64,3 +64,29 @@ Detalle de los componentes del **módulo de órdenes y comandas**, que concentra
 Representa el flujo completo de **creación de una orden, personalización de un ítem con destilado, mutación del destilado y avance del estado en el KDS**, incluyendo las validaciones de las invariantes de dominio.
 
 <img width="1677" height="940" alt="image" src="https://github.com/user-attachments/assets/e9e0ed7b-623c-49b2-ae08-d9f0001c2c3f" />
+
+### 4. Métricas de Calidad y Pruebas Unitarias
+
+#### 4.1 Reporte de Cobertura con JaCoCo
+Se implementaron pruebas unitarias puras con JUnit 5 y Mockito aislando la lógica de negocio y validadores, alcanzando una cobertura global superior al 85% y un 99% en la capa de servicios transaccionales.
+
+<img width="1181" height="216" alt="Captura de pantalla 2026-09-21 184824" src="https://github.com/user-attachments/assets/663706bd-c3e5-4e11-83ff-5759fb8d47dc" />
+
+#### 4.2 Análisis Estático de Código con SonarQube
+El escaneo estático validó la ausencia de vulnerabilidades de seguridad, cero deuda técnica crítica y cumplimiento total del Quality Gate.
+
+<img width="1658" height="802" alt="Captura de pantalla 2026-09-21 190810" src="https://github.com/user-attachments/assets/50a500ae-2b04-436f-bd64-510d98f074b1" />
+
+---
+
+### 5. Verificación de Contratos y Respuestas HTTP (Swagger UI)
+
+#### 5.1 Creación Exitosa (HTTP 201 Created)
+<img width="1405" height="700" alt="Captura de pantalla 2026-09-21 181344" src="https://github.com/user-attachments/assets/a97058d4-1a89-4025-b080-08bb648d30c2" />
+
+#### 5.2 Validación de Entrada (HTTP 400 Bad Request)
+<img width="1424" height="616" alt="Captura de pantalla 2026-09-21 181416" src="https://github.com/user-attachments/assets/d2753d11-b81e-4445-864f-00c391570684" />
+
+#### 5.3 Conflicto de Negocio por Duplicado (HTTP 409 Conflict)
+<img width="1417" height="698" alt="Captura de pantalla 2026-09-21 181457" src="https://github.com/user-attachments/assets/469f2c1b-6d18-4233-b45f-1656cd24e0a0" />
+
