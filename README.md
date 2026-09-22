@@ -39,54 +39,66 @@
 
 - La cancelación de pedidos solo es admisible cuando el estado es `RECIBIDO`; una vez iniciada la preparación en barra queda bloqueada toda anulación.
 
-## 3. Diagramas de Arquitectura
+## 3. Funcionalidades y Tabla de Endpoints
 
-### 3.1 Diagrama de Clases
+| Funcionalidad | Método HTTP | Endpoint | Descripción |
+| :--- | :---: | :--- | :--- |
+| **Crear Ítem** | `POST` | `/api/v1/platos` | Registra un nuevo plato o cóctel aplicando validaciones Jakarta y de negocio (nombres únicos). |
+| **Consultar Catálogo** | `GET` | `/api/v1/platos` | Retorna la lista completa del menú. |
+| **Consultar por ID** | `GET` | `/api/v1/platos/{id}` | Busca y retorna un ítem específico; lanza 404 si no existe. |
+| **Filtrar Disponibles**| `GET` | `/api/v1/platos/disponibles` | Retorna únicamente los ítems que se encuentran activos/en stock. |
+| **Cambiar Estado** | `PUT` | `/api/v1/platos/{id}/disponibilidad` | Alterna el estado de disponibilidad (activo/inactivo) de un ítem. |
+
+---
+
+## 4. Diagramas de Arquitectura
+
+### 4.1 Diagrama de Clases
 
 Modela las entidades del dominio, sus atributos, relaciones y los servicios que orquestan las reglas de negocio.
 
 <img width="757" height="827" alt="image" src="https://github.com/user-attachments/assets/02dc51ae-738a-42dc-b76b-eb4f190d2239" />
 
-### 3.2 Diagrama de Componentes General
+### 4.2 Diagrama de Componentes General
 
 Vista macro de los componentes del sistema y su organización por capas, evidenciando el flujo de dependencias hacia el dominio.
 
 <img width="780" height="946" alt="image" src="https://github.com/user-attachments/assets/af972482-e60a-4310-89bf-2e2abd65ce58" />
 
-### 3.3 Diagrama de Componentes Específicos
+### 4.3 Diagrama de Componentes Específicos
 
 Detalle de los componentes del **módulo de órdenes y comandas**, que concentra las reglas de negocio críticas (mutabilidad de destilado, garnishes, máquina de estados y unicidad de comanda).
 
 <img width="838" height="844" alt="image" src="https://github.com/user-attachments/assets/b6013214-f1f2-4163-a891-9ba3c9ed5658" />
 
-### 3.4 Diagrama de Secuencia
+### 4.4 Diagrama de Secuencia
 
 Representa el flujo completo de **creación de una orden, personalización de un ítem con destilado, mutación del destilado y avance del estado en el KDS**, incluyendo las validaciones de las invariantes de dominio.
 
 <img width="1677" height="940" alt="image" src="https://github.com/user-attachments/assets/e9e0ed7b-623c-49b2-ae08-d9f0001c2c3f" />
 
-### 4. Métricas de Calidad y Pruebas Unitarias
+### 5. Métricas de Calidad y Pruebas Unitarias
 
-#### 4.1 Reporte de Cobertura con JaCoCo
+#### 5.1 Reporte de Cobertura con JaCoCo
 Se implementaron pruebas unitarias puras con JUnit 5 y Mockito aislando la lógica de negocio y validadores, alcanzando una cobertura global superior al 85% y un 99% en la capa de servicios transaccionales.
 
 <img width="1181" height="216" alt="Captura de pantalla 2026-09-21 184824" src="https://github.com/user-attachments/assets/663706bd-c3e5-4e11-83ff-5759fb8d47dc" />
 
-#### 4.2 Análisis Estático de Código con SonarQube
+#### 5.2 Análisis Estático de Código con SonarQube
 El escaneo estático validó la ausencia de vulnerabilidades de seguridad, cero deuda técnica crítica y cumplimiento total del Quality Gate.
 
 <img width="1658" height="802" alt="Captura de pantalla 2026-09-21 190810" src="https://github.com/user-attachments/assets/50a500ae-2b04-436f-bd64-510d98f074b1" />
 
 ---
 
-### 5. Verificación de Contratos y Respuestas HTTP (Swagger UI)
+### 6. Verificación de Contratos y Respuestas HTTP (Swagger UI)
 
-#### 5.1 Creación Exitosa (HTTP 201 Created)
+#### 6.1 Creación Exitosa (HTTP 201 Created)
 <img width="1405" height="700" alt="Captura de pantalla 2026-09-21 181344" src="https://github.com/user-attachments/assets/a97058d4-1a89-4025-b080-08bb648d30c2" />
 
-#### 5.2 Validación de Entrada (HTTP 400 Bad Request)
+#### 6.2 Validación de Entrada (HTTP 400 Bad Request)
 <img width="1424" height="616" alt="Captura de pantalla 2026-09-21 181416" src="https://github.com/user-attachments/assets/d2753d11-b81e-4445-864f-00c391570684" />
 
-#### 5.3 Conflicto de Negocio por Duplicado (HTTP 409 Conflict)
+#### 6.3 Conflicto de Negocio por Duplicado (HTTP 409 Conflict)
 <img width="1417" height="698" alt="Captura de pantalla 2026-09-21 181457" src="https://github.com/user-attachments/assets/469f2c1b-6d18-4233-b45f-1656cd24e0a0" />
 
