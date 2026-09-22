@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.time.LocalDateTime;
 import java.util.stream.Collectors;
+import java.time.ZoneId;
 
 /**
  * Interceptor centralizado de excepciones (Controller Advice).
@@ -98,7 +99,7 @@ public class GlobalExceptionHandler {
 
     private ErrorResponseDTO buildError(int status, String error, String message, String path) {
         return ErrorResponseDTO.builder()
-                .timestamp(LocalDateTime.now())
+                .timestamp(LocalDateTime.now(ZoneId.of("UTC"))) // Zona horaria explícita
                 .status(status)
                 .error(error)
                 .message(message)

@@ -32,17 +32,21 @@
         <sonar.version>3.11.0.3922</sonar.version>
         
         <!-- Propiedades de análisis estático SonarQube -->
-        <sonar.java.coveragePlugin>jacoco</sonar.java.coveragePlugin>
-        <sonar.dynamicAnalysis>reuseReports</sonar.dynamicAnalysis>
-        <sonar.jacoco.reportPath>${project.build.directory}/jacoco.exec</sonar.jacoco.reportPath>
-        <sonar.language>java</sonar.language>
-        <sonar.exclusions>
-            **/config/**,
-            **/dto/**,
-            **/model/domain/**,
-            **/exception/**,
-            **/mapper/**
-        </sonar.exclusions>
+        <!-- Configuración del scanner de SonarQube -->
+        <sonar.host.url>http://localhost:9000</sonar.host.url>
+        <sonar.java.source>21</sonar.java.source>
+        <sonar.coverage.jacoco.xmlReportPaths>
+            ${project.reporting.outputDirectory}/jacoco/jacoco.xml
+        </sonar.coverage.jacoco.xmlReportPaths>
+        
+        <!-- Exclusiones de análisis estático (alineadas con JaCoCo) -->
+        <sonar.coverage.exclusions>
+            src/main/java/co/edu/eci/dosw/restaurant/config/**,
+            src/main/java/co/edu/eci/dosw/restaurant/*Application.java,
+            src/main/java/co/edu/eci/dosw/restaurant/dto/**,
+            src/main/java/co/edu/eci/dosw/restaurant/mapper/**,
+            src/main/java/co/edu/eci/dosw/restaurant/controller/**
+        </sonar.coverage.exclusions>
     </properties>
 
     <dependencies>
@@ -183,7 +187,7 @@
             <plugin>
                 <groupId>org.sonarsource.scanner.maven</groupId>
                 <artifactId>sonar-maven-plugin</artifactId>
-                <version>${sonar.version}</version>
+                <version>3.11.0.3922</version>
             </plugin>
         </plugins>
     </build>
