@@ -45,7 +45,7 @@ Thumbs.db
 *.iml
 *.iws
 *.ipr
-out/
+/out/
 
 # IDE - VS Code #
 .vscode/

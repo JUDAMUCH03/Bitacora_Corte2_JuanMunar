@@ -3,6 +3,8 @@ package co.edu.eci.dosw.restaurant.controller;
 import co.edu.eci.dosw.restaurant.controller.docs.PlatoApi;
 import co.edu.eci.dosw.restaurant.dto.request.PlatoRequestDTO;
 import co.edu.eci.dosw.restaurant.dto.response.PlatoResponseDTO;
+import co.edu.eci.dosw.restaurant.mapper.PlatoMapperIn;
+import co.edu.eci.dosw.restaurant.mapper.PlatoMapperOut;
 import co.edu.eci.dosw.restaurant.model.domain.Plato;
 import co.edu.eci.dosw.restaurant.service.IPlatoService;
 import jakarta.validation.Valid;
@@ -21,8 +23,8 @@ import java.util.List;
 public class PlatoController implements PlatoApi {
 
     private final IPlatoService platoService;
-    private final co.edu.eci.dosw.restaurant.mapper.in.PlatoMapper mapperIn;
-    private final co.edu.eci.dosw.restaurant.mapper.out.PlatoMapper mapperOut;
+    private final PlatoMapperIn mapperIn;
+    private final PlatoMapperOut mapperOut;
 
     @Override
     @GetMapping

@@ -3,7 +3,7 @@ package co.edu.eci.dosw.restaurant.controller;
 import co.edu.eci.dosw.restaurant.controller.docs.MenuApi;
 import co.edu.eci.dosw.restaurant.dto.response.PlatoResponseDTO;
 import co.edu.eci.dosw.restaurant.exception.RecursoNoEncontradoException;
-import co.edu.eci.dosw.restaurant.mapper.out.PlatoMapper;
+import co.edu.eci.dosw.restaurant.mapper.PlatoMapperOut;
 import co.edu.eci.dosw.restaurant.model.domain.Plato;
 import co.edu.eci.dosw.restaurant.service.IPlatoService;
 import lombok.RequiredArgsConstructor;
@@ -20,7 +20,7 @@ import java.util.List;
 public class MenuController implements MenuApi {
 
     private final IPlatoService platoService;
-    private final PlatoMapper mapperOut;
+    private final PlatoMapperOut mapperOut;
 
     @Override
     @GetMapping
