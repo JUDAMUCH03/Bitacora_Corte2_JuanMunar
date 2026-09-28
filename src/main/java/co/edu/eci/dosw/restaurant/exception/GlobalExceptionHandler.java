@@ -68,6 +68,20 @@ public class GlobalExceptionHandler {
     }
 
     /**
+     * HTTP 401 - Credenciales inválidas o falla de autenticación.
+     */
+    @ExceptionHandler(org.springframework.security.core.AuthenticationException.class)
+    public ResponseEntity<ErrorResponseDTO> handleAuthentication(
+            org.springframework.security.core.AuthenticationException ex,
+            HttpServletRequest request) {
+
+        log.warn("Fallo de autenticación en [{}]: {}", request.getRequestURI(), ex.getMessage());
+
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(buildError(HttpStatus.UNAUTHORIZED.value(), "Unauthorized", "Credenciales inválidas", request.getRequestURI()));
+    }
+
+    /**
      * HTTP 422 - Violación de reglas de dominio o transiciones de estado inválidas.
      */
     @ExceptionHandler({EstadoInvalidoException.class, ReglaDeNegocioException.class})

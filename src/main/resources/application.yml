@@ -13,3 +13,7 @@ spring:
   data:
     mongodb:
       uri: ${SPRING_DATA_MONGODB_URI:mongodb://localhost:27017/blue_velvet_events}
+
+jwt:
+  secret: ${JWT_SECRET:VGVzdFNlY3JldEtleVRlc3RTZWNyZXRLZXlUZXN0U2VjMTIzNDU2Nzg=} # Mínimo 256 bits Base64
+  expiration: 86400000 # 24 horas

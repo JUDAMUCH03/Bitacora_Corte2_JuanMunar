@@ -1,0 +1,53 @@
+package co.edu.eci.dosw.restaurant.config;
+
+import co.edu.eci.dosw.restaurant.persistence.entity.UsuarioEntity;
+import co.edu.eci.dosw.restaurant.repository.UsuarioRepository;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.CommandLineRunner;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Component;
+
+import java.util.List;
+
+@Component
+@Slf4j
+@RequiredArgsConstructor
+public class DataInitializer implements CommandLineRunner {
+
+    private final UsuarioRepository usuarioRepository;
+    private final PasswordEncoder passwordEncoder;
+
+    @Override
+    public void run(String... args) {
+        if (usuarioRepository.count() == 0) {
+            log.info("Inicializando usuarios por defecto en PostgreSQL (Blue Velvet)...");
+
+            UsuarioEntity gerente = UsuarioEntity.builder()
+                    .email("admin@bluevelvet.com")
+                    .password(passwordEncoder.encode("admin123"))
+                    .rol("ROLE_GERENTE")
+                    .activo(true)
+                    .build();
+
+            UsuarioEntity bartender = UsuarioEntity.builder()
+                    .email("bar@bluevelvet.com")
+                    .password(passwordEncoder.encode("bar123"))
+                    .rol("ROLE_BARTENDER")
+                    .activo(true)
+                    .build();
+
+            UsuarioEntity mesero = UsuarioEntity.builder()
+                    .email("mesero@bluevelvet.com")
+                    .password(passwordEncoder.encode("mesero123"))
+                    .rol("ROLE_MESERO")
+                    .activo(true)
+                    .build();
+
+            usuarioRepository.saveAll(List.of(gerente, bartender, mesero));
+            log.info("Usuarios iniciales creados exitosamente.");
+        } else {
+            log.info("Base de datos de usuarios ya contiene registros. Omitiendo inicialización.");
+        }
+    }
+}
