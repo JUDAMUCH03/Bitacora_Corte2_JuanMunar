@@ -2,9 +2,11 @@ package co.edu.eci.dosw.restaurant.service.impl;
 
 import co.edu.eci.dosw.restaurant.exception.RecursoNoEncontradoException;
 import co.edu.eci.dosw.restaurant.mapper.PlatoEntityMapper;
+import co.edu.eci.dosw.restaurant.model.domain.EventoRestaurante;
 import co.edu.eci.dosw.restaurant.model.domain.Plato;
 import co.edu.eci.dosw.restaurant.persistence.entity.PlatoEntity;
 import co.edu.eci.dosw.restaurant.repository.PlatoRepository;
+import co.edu.eci.dosw.restaurant.service.IAuditoriaService;
 import co.edu.eci.dosw.restaurant.service.IPlatoService;
 import co.edu.eci.dosw.restaurant.validator.IPlatoValidator;
 import lombok.RequiredArgsConstructor;
@@ -12,7 +14,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @Slf4j
@@ -22,6 +27,7 @@ public class PlatoServiceImpl implements IPlatoService {
     private final PlatoRepository platoRepository;
     private final PlatoEntityMapper entityMapper;
     private final IPlatoValidator validator;
+    private final IAuditoriaService auditoriaService;
 
     @Override
     @Transactional(readOnly = true)
@@ -72,6 +78,22 @@ public class PlatoServiceImpl implements IPlatoService {
         PlatoEntity guardado = platoRepository.save(entity);
 
         log.info("Producto creado exitosamente: ID={}, Nombre='{}'", guardado.getId(), guardado.getNombre());
+
+        Map<String, Object> metadatos = new HashMap<>();
+        metadatos.put("nombre", guardado.getNombre());
+        metadatos.put("precio", guardado.getPrecio());
+        metadatos.put("categoria", guardado.getCategoria());
+
+        auditoriaService.registrarEvento(EventoRestaurante.builder()
+                .tipo("PLATO_CREADO")
+                .entidadTipo("PLATO")
+                .entidadId(guardado.getId())
+                .descripcion(String.format("Se creó el plato '%s' en la carta", guardado.getNombre()))
+                .usuario("SISTEMA")
+                .timestamp(LocalDateTime.now())
+                .metadatos(metadatos)
+                .build());
+
         return entityMapper.toDomain(guardado);
     }
 
@@ -112,6 +134,22 @@ public class PlatoServiceImpl implements IPlatoService {
 
         entity.setDisponible(disponible);
         PlatoEntity guardado = platoRepository.save(entity);
+
+        Map<String, Object> metadatos = new HashMap<>();
+        metadatos.put("nombre", guardado.getNombre());
+        metadatos.put("disponible", disponible);
+
+        auditoriaService.registrarEvento(EventoRestaurante.builder()
+                .tipo("DISPONIBILIDAD_CAMBIADA")
+                .entidadTipo("PLATO")
+                .entidadId(guardado.getId())
+                .descripcion(String.format("Disponibilidad del plato '%s' cambiada a %s",
+                        guardado.getNombre(), disponible ? "disponible" : "no disponible"))
+                .usuario("SISTEMA")
+                .timestamp(LocalDateTime.now())
+                .metadatos(metadatos)
+                .build());
+
         return entityMapper.toDomain(guardado);
     }
 

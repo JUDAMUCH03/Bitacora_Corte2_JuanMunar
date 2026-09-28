@@ -3,6 +3,7 @@ package co.edu.eci.dosw.restaurant.service;
 import co.edu.eci.dosw.restaurant.exception.ConflictoException;
 import co.edu.eci.dosw.restaurant.exception.RecursoNoEncontradoException;
 import co.edu.eci.dosw.restaurant.mapper.PlatoEntityMapper;
+import co.edu.eci.dosw.restaurant.model.domain.EventoRestaurante;
 import co.edu.eci.dosw.restaurant.model.domain.Plato;
 import co.edu.eci.dosw.restaurant.persistence.entity.PlatoEntity;
 import co.edu.eci.dosw.restaurant.repository.PlatoRepository;
@@ -21,6 +22,7 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -34,6 +36,9 @@ class PlatoServiceImplTest {
 
     @Mock
     private IPlatoValidator validator;
+
+    @Mock
+    private IAuditoriaService auditoriaService;
 
     @InjectMocks
     private PlatoServiceImpl service;
@@ -62,7 +67,7 @@ class PlatoServiceImplTest {
     }
 
     @Test
-    @DisplayName("crear - guarda el cóctel, persiste en BD y lo retorna con ID")
+    @DisplayName("crear - guarda el cóctel, persiste en BD, registra evento de auditoría y lo retorna con ID")
     void crear_platoValido_guardaYRetornaConId() {
         when(entityMapper.toEntity(platoEntrada)).thenReturn(platoEntity);
         when(platoRepository.save(platoEntity)).thenReturn(platoEntity);
@@ -77,16 +82,22 @@ class PlatoServiceImplTest {
         assertTrue(resultado.estaDisponible());
         verify(validator).validarNombreUnico("Smoked Old Fashioned");
         verify(platoRepository).save(platoEntity);
+        verify(auditoriaService).registrarEvento(argThat(e ->
+                "PLATO_CREADO".equals(e.getTipo()) &&
+                "PLATO".equals(e.getEntidadTipo()) &&
+                Long.valueOf(1L).equals(e.getEntidadId())
+        ));
     }
 
     @Test
-    @DisplayName("crear - cuando el validador detecta duplicado, propaga ConflictoException")
+    @DisplayName("crear - cuando el validador detecta duplicado, propaga ConflictoException y no audita")
     void crear_nombreDuplicado_lanzaConflictoException() {
         doThrow(new ConflictoException("Nombre duplicado"))
                 .when(validator).validarNombreUnico("Smoked Old Fashioned");
 
         assertThrows(ConflictoException.class, () -> service.crear(platoEntrada));
         verify(platoRepository, never()).save(any());
+        verify(auditoriaService, never()).registrarEvento(any());
     }
 
     @Test
@@ -202,7 +213,7 @@ class PlatoServiceImplTest {
     }
 
     @Test
-    @DisplayName("cambiarDisponibilidad - activa e inhabilita un cóctel correctamente")
+    @DisplayName("cambiarDisponibilidad - activa e inhabilita un cóctel correctamente y emite evento")
     void cambiarDisponibilidad_alternaEstados() {
         when(platoRepository.findById(1L)).thenReturn(Optional.of(platoEntity));
         when(platoRepository.save(platoEntity)).thenReturn(platoEntity);
@@ -213,6 +224,11 @@ class PlatoServiceImplTest {
         assertNotNull(actualizado);
         assertFalse(platoEntity.getDisponible());
         verify(platoRepository).save(platoEntity);
+        verify(auditoriaService).registrarEvento(argThat(e ->
+                "DISPONIBILIDAD_CAMBIADA".equals(e.getTipo()) &&
+                "PLATO".equals(e.getEntidadTipo()) &&
+                Long.valueOf(1L).equals(e.getEntidadId())
+        ));
     }
 
     @Test
@@ -222,6 +238,7 @@ class PlatoServiceImplTest {
 
         assertThrows(RecursoNoEncontradoException.class, () -> service.cambiarDisponibilidad(999L, true));
         verify(platoRepository, never()).save(any());
+        verify(auditoriaService, never()).registrarEvento(any());
     }
 
     @Test
