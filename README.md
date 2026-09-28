@@ -82,36 +82,35 @@ Representa el flujo completo de **creación de una orden, personalización de un
 
 ---
 
-### 5. Métricas de Calidad y Pruebas Unitarias
+## 5. Métricas de Calidad y Pruebas Unitarias
 
-#### 5.1 Reporte de Cobertura con JaCoCo
+### 5.1 Reporte de Cobertura con JaCoCo
 Se implementaron pruebas unitarias puras con JUnit 5 y Mockito aislando la lógica de negocio y validadores, alcanzando una cobertura global superior al 85% y un 99% en la capa de servicios transaccionales.
 
 <img width="1181" height="216" alt="Captura de pantalla 2026-09-21 184824" src="https://github.com/user-attachments/assets/663706bd-c3e5-4e11-83ff-5759fb8d47dc" />
 
-#### 5.2 Análisis Estático de Código con SonarQube
+### 5.2 Análisis Estático de Código con SonarQube
 El escaneo estático validó la ausencia de vulnerabilidades de seguridad, cero deuda técnica crítica y cumplimiento total del Quality Gate.
 
 <img width="1658" height="802" alt="Captura de pantalla 2026-09-21 190810" src="https://github.com/user-attachments/assets/50a500ae-2b04-436f-bd64-510d98f074b1" />
 
 ---
 
-### 6. Verificación de Contratos y Respuestas HTTP (Swagger UI)
+## 6. Verificación de Contratos y Respuestas HTTP (Swagger UI)
 
-#### 6.1 Creación Exitosa (HTTP 201 Created)
+### 6.1 Creación Exitosa (HTTP 201 Created)
 <img width="1405" height="700" alt="Captura de pantalla 2026-09-21 181344" src="https://github.com/user-attachments/assets/a97058d4-1a89-4025-b080-08bb648d30c2" />
 
-#### 6.2 Validación de Entrada (HTTP 400 Bad Request)
+### 6.2 Validación de Entrada (HTTP 400 Bad Request)
 <img width="1424" height="616" alt="Captura de pantalla 2026-09-21 181416" src="https://github.com/user-attachments/assets/d2753d11-b81e-4445-864f-00c391570684" />
 
-#### 6.3 Conflicto de Negocio por Duplicado (HTTP 409 Conflict)
+### 6.3 Conflicto de Negocio por Duplicado (HTTP 409 Conflict)
 <img width="1417" height="698" alt="Captura de pantalla 2026-09-21 181457" src="https://github.com/user-attachments/assets/469f2c1b-6d18-4233-b45f-1656cd24e0a0" />
 
 ---
 
-### 7. Persistencia elegida
+## 7. Persistencia elegida
 
-####PostgreSQL: Entidades con relaciones transaccionales e integridad referencial: platos (catálogo, precios, ABV), usuarios (credenciales, roles) y pedidos.   
-
-####MongoDB: Documentos semiestructurados de alta frecuencia de inserción: eventos_restaurante (auditoría de cambios de disponibilidad, logs de bar, modificaciones de recetas).
+- **PostgreSQL:** Entidades con relaciones transaccionales e integridad referencial: platos (catálogo, precios, ABV), usuarios (credenciales, roles) y pedidos.   
+- **MongoDB:** Documentos semiestructurados de alta frecuencia de inserción: eventos_restaurante (auditoría de cambios de disponibilidad, logs de bar, modificaciones de recetas).
 
