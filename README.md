@@ -6,6 +6,8 @@
 
 ## 1. Concepto e Identidad del Restaurante
 
+<img width="1254" height="1254" alt="LogoBlueVelvet" src="https://github.com/user-attachments/assets/ce990092-9dd6-419f-b605-01870fdf20ed" />
+
 - **Nombre Comercial:** Blue Velvet
 - **Resumen:** Gastrobar contemporáneo de alta gama especializado en coctelería de autor, mixología botánica, destilados premium y mocktails artesanales
 - **Propósito del Sistema:** Plataforma web transaccional orientada a digitalizar el ciclo de vida del servicio en sala y barra. Abarca consulta de carta digital interactiva, personalización rigurosa de tragos, comanda electrónica y proyección en tiempo real en barra mediante **KDS (Kitchen Display System)**, mitigando errores de comunicación y eliminando el uso de papel
