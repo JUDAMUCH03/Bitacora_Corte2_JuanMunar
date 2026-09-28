@@ -7,6 +7,9 @@ import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.core.AuthenticationException;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -55,6 +58,32 @@ class GlobalExceptionHandlerTest {
         assertEquals(HttpStatus.UNPROCESSABLE_ENTITY, response.getStatusCode());
         assertNotNull(response.getBody());
         assertEquals(422, response.getBody().getStatus());
+    }
+
+    @Test
+    @DisplayName("handleAccessDenied - retorna 403 Forbidden y mensaje estandarizado (RBAC)")
+    void handleAccessDenied_retorna403() {
+        AccessDeniedException ex = new AccessDeniedException("Acceso denegado");
+        ResponseEntity<ErrorResponseDTO> response = handler.handleAccessDenied(ex, request);
+
+        assertEquals(HttpStatus.FORBIDDEN, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertEquals(403, response.getBody().getStatus());
+        assertEquals("Forbidden", response.getBody().getError());
+        assertTrue(response.getBody().getMessage().contains("No posee los privilegios necesarios"));
+    }
+
+    @Test
+    @DisplayName("handleAuthentication - retorna 401 Unauthorized y mensaje sanitizado")
+    void handleAuthentication_retorna401() {
+        AuthenticationException ex = new BadCredentialsException("Bad credentials");
+        ResponseEntity<ErrorResponseDTO> response = handler.handleAuthentication(ex, request);
+
+        assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertEquals(401, response.getBody().getStatus());
+        assertEquals("Unauthorized", response.getBody().getError());
+        assertEquals("Credenciales inválidas", response.getBody().getMessage());
     }
 
     @Test

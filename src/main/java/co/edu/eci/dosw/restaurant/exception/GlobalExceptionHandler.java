@@ -82,6 +82,21 @@ public class GlobalExceptionHandler {
     }
 
     /**
+     * HTTP 403 - Acceso denegado por privilegios o rol insuficiente (RBAC).
+     */
+    @ExceptionHandler(org.springframework.security.access.AccessDeniedException.class)
+    public ResponseEntity<ErrorResponseDTO> handleAccessDenied(
+            org.springframework.security.access.AccessDeniedException ex,
+            HttpServletRequest request) {
+
+        log.warn("Acceso denegado en [{}]: {}", request.getRequestURI(), ex.getMessage());
+
+        return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                .body(buildError(HttpStatus.FORBIDDEN.value(), "Forbidden",
+                        "Acceso denegado: No posee los privilegios necesarios para realizar esta acción.", request.getRequestURI()));
+    }
+
+    /**
      * HTTP 422 - Violación de reglas de dominio o transiciones de estado inválidas.
      */
     @ExceptionHandler({EstadoInvalidoException.class, ReglaDeNegocioException.class})

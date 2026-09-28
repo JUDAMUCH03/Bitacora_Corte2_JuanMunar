@@ -31,5 +31,6 @@ class ArchitectureStructureTest {
         assertDoesNotThrow(() -> Class.forName("co.edu.eci.dosw.restaurant.security.JwtAuthFilter"));
         assertDoesNotThrow(() -> Class.forName("co.edu.eci.dosw.restaurant.security.UserDetailsServiceImpl"));
         assertDoesNotThrow(() -> Class.forName("co.edu.eci.dosw.restaurant.config.SecurityConfig"));
+        assertDoesNotThrow(() -> Class.forName("co.edu.eci.dosw.restaurant.config.CorsConfig"));
     }
 }
