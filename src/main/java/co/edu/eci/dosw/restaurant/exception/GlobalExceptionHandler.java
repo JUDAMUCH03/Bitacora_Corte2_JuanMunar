@@ -1,17 +1,21 @@
 package co.edu.eci.dosw.restaurant.exception;
 
-import co.edu.eci.dosw.restaurant.dto.response.ErrorResponseDTO;
 import jakarta.servlet.http.HttpServletRequest;
-import lombok.extern.slf4j.Slf4j;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.stream.Collectors;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-import java.time.LocalDateTime;
-import java.util.stream.Collectors;
-import java.time.ZoneId;
+import lombok.extern.slf4j.Slf4j;
+
+import co.edu.eci.dosw.restaurant.dto.response.ErrorResponseDTO;
 
 /**
  * Interceptor centralizado de excepciones (Controller Advice).
@@ -65,6 +69,35 @@ public class GlobalExceptionHandler {
 
         return ResponseEntity.status(HttpStatus.CONFLICT)
                 .body(buildError(HttpStatus.CONFLICT.value(), "Conflict", ex.getMessage(), request.getRequestURI()));
+    }
+
+    /**
+     * HTTP 401 - Credenciales inválidas o falla de autenticación.
+     */
+    @ExceptionHandler(AuthenticationException.class)
+    public ResponseEntity<ErrorResponseDTO> handleAuthentication(
+            AuthenticationException ex,
+            HttpServletRequest request) {
+
+        log.warn("Fallo de autenticación en [{}]: {}", request.getRequestURI(), ex.getMessage());
+
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(buildError(HttpStatus.UNAUTHORIZED.value(), "Unauthorized", "Credenciales inválidas", request.getRequestURI()));
+    }
+
+    /**
+     * HTTP 403 - Acceso denegado por privilegios o rol insuficiente (RBAC).
+     */
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<ErrorResponseDTO> handleAccessDenied(
+            AccessDeniedException ex,
+            HttpServletRequest request) {
+
+        log.warn("Acceso denegado en [{}]: {}", request.getRequestURI(), ex.getMessage());
+
+        return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                .body(buildError(HttpStatus.FORBIDDEN.value(), "Forbidden",
+                        "Acceso denegado: No posee los privilegios necesarios para realizar esta acción.", request.getRequestURI()));
     }
 
     /**

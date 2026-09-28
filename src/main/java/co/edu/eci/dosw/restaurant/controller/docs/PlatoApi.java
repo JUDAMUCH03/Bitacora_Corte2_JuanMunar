@@ -1,17 +1,19 @@
 package co.edu.eci.dosw.restaurant.controller.docs;
 
-import co.edu.eci.dosw.restaurant.dto.request.PlatoRequestDTO;
-import co.edu.eci.dosw.restaurant.dto.response.ErrorResponseDTO;
-import co.edu.eci.dosw.restaurant.dto.response.PlatoResponseDTO;
+import java.util.List;
+
+import org.springframework.http.ResponseEntity;
+
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import org.springframework.http.ResponseEntity;
 
-import java.util.List;
+import co.edu.eci.dosw.restaurant.dto.request.PlatoRequestDTO;
+import co.edu.eci.dosw.restaurant.dto.response.ErrorResponseDTO;
+import co.edu.eci.dosw.restaurant.dto.response.PlatoResponseDTO;
 
 @Tag(name = "Platos", description = "Administración completa de la carta y coctelería (Rol Admin)")
 public interface PlatoApi {

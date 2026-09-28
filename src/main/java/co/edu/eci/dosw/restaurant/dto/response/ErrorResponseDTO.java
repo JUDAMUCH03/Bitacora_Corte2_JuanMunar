@@ -1,11 +1,11 @@
 package co.edu.eci.dosw.restaurant.dto.response;
 
+import java.time.LocalDateTime;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import java.time.LocalDateTime;
 
 /**
  * Contrato uniforme de respuesta para errores de la API en Blue Velvet.

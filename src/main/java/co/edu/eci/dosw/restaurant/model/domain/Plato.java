@@ -1,10 +1,11 @@
 package co.edu.eci.dosw.restaurant.model.domain;
 
-import co.edu.eci.dosw.restaurant.model.domain.enums.CategoriaBebida;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import co.edu.eci.dosw.restaurant.model.domain.enums.CategoriaBebida;
 
 /**
  * Entidad pura del dominio de Blue Velvet.

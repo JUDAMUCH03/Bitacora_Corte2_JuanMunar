@@ -1,5 +1,25 @@
 package co.edu.eci.dosw.restaurant.controller;
 
+import jakarta.validation.Valid;
+import java.util.List;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
 import co.edu.eci.dosw.restaurant.controller.docs.PlatoApi;
 import co.edu.eci.dosw.restaurant.dto.request.PlatoRequestDTO;
 import co.edu.eci.dosw.restaurant.dto.response.PlatoResponseDTO;
@@ -7,14 +27,6 @@ import co.edu.eci.dosw.restaurant.mapper.PlatoMapperIn;
 import co.edu.eci.dosw.restaurant.mapper.PlatoMapperOut;
 import co.edu.eci.dosw.restaurant.model.domain.Plato;
 import co.edu.eci.dosw.restaurant.service.IPlatoService;
-import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/platos")
@@ -28,6 +40,7 @@ public class PlatoController implements PlatoApi {
 
     @Override
     @GetMapping
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<List<PlatoResponseDTO>> listarTodos() {
         log.info("REST: GET /api/v1/platos");
         List<Plato> platos = platoService.obtenerTodos();
@@ -36,6 +49,7 @@ public class PlatoController implements PlatoApi {
 
     @Override
     @GetMapping("/{id}")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<PlatoResponseDTO> obtenerPorId(@PathVariable Long id) {
         log.info("REST: GET /api/v1/platos/{}", id);
         Plato plato = platoService.obtenerPorId(id);
@@ -44,6 +58,7 @@ public class PlatoController implements PlatoApi {
 
     @Override
     @PostMapping
+    @PreAuthorize("hasRole('GERENTE')")
     public ResponseEntity<PlatoResponseDTO> crear(@RequestBody @Valid PlatoRequestDTO dto) {
         log.info("REST: POST /api/v1/platos - Nombre='{}'", dto.getNombre());
         Plato nuevoPlato = mapperIn.toDomain(dto);
@@ -54,6 +69,7 @@ public class PlatoController implements PlatoApi {
 
     @Override
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('GERENTE')")
     public ResponseEntity<PlatoResponseDTO> actualizar(
             @PathVariable Long id,
             @RequestBody @Valid PlatoRequestDTO dto) {
@@ -65,6 +81,7 @@ public class PlatoController implements PlatoApi {
 
     @Override
     @PatchMapping("/{id}/disponible")
+    @PreAuthorize("hasAnyRole('GERENTE', 'BARTENDER', 'MESERO')")
     public ResponseEntity<PlatoResponseDTO> cambiarDisponibilidad(
             @PathVariable Long id,
             @RequestParam boolean disponible) {
@@ -75,6 +92,7 @@ public class PlatoController implements PlatoApi {
 
     @Override
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('GERENTE')")
     public ResponseEntity<Void> eliminar(@PathVariable Long id) {
         log.info("REST: DELETE /api/v1/platos/{}", id);
         platoService.eliminar(id);
