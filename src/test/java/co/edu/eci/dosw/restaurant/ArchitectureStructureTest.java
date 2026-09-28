@@ -14,5 +14,8 @@ class ArchitectureStructureTest {
         assertDoesNotThrow(() -> Class.forName("co.edu.eci.dosw.restaurant.dto.response.PlatoResponseDTO"));
         assertDoesNotThrow(() -> Class.forName("co.edu.eci.dosw.restaurant.mapper.PlatoMapperIn"));
         assertDoesNotThrow(() -> Class.forName("co.edu.eci.dosw.restaurant.mapper.PlatoMapperOut"));
+        assertDoesNotThrow(() -> Class.forName("co.edu.eci.dosw.restaurant.mapper.PlatoEntityMapper"));
+        assertDoesNotThrow(() -> Class.forName("co.edu.eci.dosw.restaurant.persistence.entity.PlatoEntity"));
+        assertDoesNotThrow(() -> Class.forName("co.edu.eci.dosw.restaurant.repository.PlatoRepository"));
     }
 }

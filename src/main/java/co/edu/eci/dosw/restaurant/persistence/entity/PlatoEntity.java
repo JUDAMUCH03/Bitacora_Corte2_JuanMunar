@@ -1,4 +1,4 @@
-package co.edu.eci.dosw.restaurant.model.entity;
+package co.edu.eci.dosw.restaurant.persistence.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -23,23 +23,28 @@ import java.time.LocalDateTime;
 public class PlatoEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)  // la BD asigna el ID
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, unique = true, length = 120)
+    @Column(name = "nombre", unique = true, nullable = false, length = 120)
     private String nombre;
 
-    @Column(nullable = false, precision = 10, scale = 2)
+    @Column(name = "precio", nullable = false)
     private Double precio;
 
-    @Column(nullable = false, length = 60)
+    @Column(name = "categoria", nullable = false, length = 60)
     private String categoria;
 
+    @Column(name = "descripcion")
     private String descripcion;
 
-    @Column(nullable = false)
+    @Column(name = "graduacion_alcoholica")
+    private Double graduacionAlcoholica;
+
+    @Column(name = "disponible", nullable = false)
     private Boolean disponible;
 
-    @CreationTimestamp  // Hibernate la llena automáticamente
+    @CreationTimestamp
+    @Column(name = "creado_en", updatable = false)
     private LocalDateTime creadoEn;
 }
