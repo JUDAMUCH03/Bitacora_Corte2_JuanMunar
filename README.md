@@ -77,6 +77,11 @@ Representa el flujo completo de **creación de una orden, personalización de un
 
 <img width="1677" height="940" alt="image" src="https://github.com/user-attachments/assets/e9e0ed7b-623c-49b2-ae08-d9f0001c2c3f" />
 
+### 4.5 Diagrama de contexto C4
+<img width="992" height="582" alt="C4" src="https://github.com/user-attachments/assets/a851d19c-fefc-47e8-a7d2-119e6e460c94" />
+
+---
+
 ### 5. Métricas de Calidad y Pruebas Unitarias
 
 #### 5.1 Reporte de Cobertura con JaCoCo
@@ -101,4 +106,12 @@ El escaneo estático validó la ausencia de vulnerabilidades de seguridad, cero 
 
 #### 6.3 Conflicto de Negocio por Duplicado (HTTP 409 Conflict)
 <img width="1417" height="698" alt="Captura de pantalla 2026-09-21 181457" src="https://github.com/user-attachments/assets/469f2c1b-6d18-4233-b45f-1656cd24e0a0" />
+
+---
+
+### 7. Persistencia elegida
+
+####PostgreSQL: Entidades con relaciones transaccionales e integridad referencial: platos (catálogo, precios, ABV), usuarios (credenciales, roles) y pedidos.   
+
+####MongoDB: Documentos semiestructurados de alta frecuencia de inserción: eventos_restaurante (auditoría de cambios de disponibilidad, logs de bar, modificaciones de recetas).
 
