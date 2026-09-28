@@ -1,10 +1,9 @@
 package co.edu.eci.dosw.restaurant.service;
 
-import co.edu.eci.dosw.restaurant.mapper.EventoMapper;
-import co.edu.eci.dosw.restaurant.model.domain.EventoRestaurante;
-import co.edu.eci.dosw.restaurant.persistence.document.EventoRestauranteDocument;
-import co.edu.eci.dosw.restaurant.repository.EventoRestauranteRepository;
-import co.edu.eci.dosw.restaurant.service.impl.AuditoriaServiceImpl;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Map;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -12,14 +11,16 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Map;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import co.edu.eci.dosw.restaurant.mapper.EventoMapper;
+import co.edu.eci.dosw.restaurant.model.domain.EventoRestaurante;
+import co.edu.eci.dosw.restaurant.persistence.document.EventoRestauranteDocument;
+import co.edu.eci.dosw.restaurant.repository.EventoRestauranteRepository;
+import co.edu.eci.dosw.restaurant.service.impl.AuditoriaServiceImpl;
 
 @ExtendWith(MockitoExtension.class)
 class AuditoriaServiceImplTest {

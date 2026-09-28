@@ -1,10 +1,11 @@
 package co.edu.eci.dosw.restaurant.repository;
 
-import co.edu.eci.dosw.restaurant.persistence.entity.UsuarioEntity;
+import java.util.Optional;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import java.util.Optional;
+import co.edu.eci.dosw.restaurant.persistence.entity.UsuarioEntity;
 
 @Repository
 public interface UsuarioRepository extends JpaRepository<UsuarioEntity, Long> {

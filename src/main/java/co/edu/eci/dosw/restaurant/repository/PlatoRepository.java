@@ -1,10 +1,11 @@
 package co.edu.eci.dosw.restaurant.repository;
 
-import co.edu.eci.dosw.restaurant.persistence.entity.PlatoEntity;
+import java.util.List;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
+import co.edu.eci.dosw.restaurant.persistence.entity.PlatoEntity;
 
 @Repository
 public interface PlatoRepository extends JpaRepository<PlatoEntity, Long> {

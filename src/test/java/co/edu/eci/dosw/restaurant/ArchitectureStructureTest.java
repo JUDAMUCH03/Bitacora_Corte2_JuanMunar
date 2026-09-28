@@ -1,8 +1,7 @@
 package co.edu.eci.dosw.restaurant;
 
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
-
 import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
 class ArchitectureStructureTest {
 

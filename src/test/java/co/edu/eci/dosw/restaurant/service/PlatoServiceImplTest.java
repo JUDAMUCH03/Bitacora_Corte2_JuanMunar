@@ -1,14 +1,8 @@
 package co.edu.eci.dosw.restaurant.service;
 
-import co.edu.eci.dosw.restaurant.exception.ConflictoException;
-import co.edu.eci.dosw.restaurant.exception.RecursoNoEncontradoException;
-import co.edu.eci.dosw.restaurant.mapper.PlatoEntityMapper;
-import co.edu.eci.dosw.restaurant.model.domain.EventoRestaurante;
-import co.edu.eci.dosw.restaurant.model.domain.Plato;
-import co.edu.eci.dosw.restaurant.persistence.entity.PlatoEntity;
-import co.edu.eci.dosw.restaurant.repository.PlatoRepository;
-import co.edu.eci.dosw.restaurant.service.impl.PlatoServiceImpl;
-import co.edu.eci.dosw.restaurant.validator.IPlatoValidator;
+import java.util.List;
+import java.util.Optional;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -16,14 +10,27 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-
-import java.util.List;
-import java.util.Optional;
-
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import co.edu.eci.dosw.restaurant.exception.ConflictoException;
+import co.edu.eci.dosw.restaurant.exception.RecursoNoEncontradoException;
+import co.edu.eci.dosw.restaurant.mapper.PlatoEntityMapper;
+import co.edu.eci.dosw.restaurant.model.domain.Plato;
+import co.edu.eci.dosw.restaurant.persistence.entity.PlatoEntity;
+import co.edu.eci.dosw.restaurant.repository.PlatoRepository;
+import co.edu.eci.dosw.restaurant.service.impl.PlatoServiceImpl;
+import co.edu.eci.dosw.restaurant.validator.IPlatoValidator;
 
 @ExtendWith(MockitoExtension.class)
 class PlatoServiceImplTest {

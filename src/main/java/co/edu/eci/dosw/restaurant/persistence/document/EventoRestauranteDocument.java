@@ -1,14 +1,15 @@
 package co.edu.eci.dosw.restaurant.persistence.document;
 
+import java.time.LocalDateTime;
+import java.util.Map;
+
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.mapping.Document;
-
-import java.time.LocalDateTime;
-import java.util.Map;
 
 /**
  * Documento de persistencia en MongoDB para trazabilidad y auditoría de eventos.

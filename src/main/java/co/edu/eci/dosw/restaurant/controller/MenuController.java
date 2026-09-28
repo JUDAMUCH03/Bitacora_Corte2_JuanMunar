@@ -1,17 +1,22 @@
 package co.edu.eci.dosw.restaurant.controller;
 
+import java.util.List;
+
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
 import co.edu.eci.dosw.restaurant.controller.docs.MenuApi;
 import co.edu.eci.dosw.restaurant.dto.response.PlatoResponseDTO;
 import co.edu.eci.dosw.restaurant.exception.RecursoNoEncontradoException;
 import co.edu.eci.dosw.restaurant.mapper.PlatoMapperOut;
 import co.edu.eci.dosw.restaurant.model.domain.Plato;
 import co.edu.eci.dosw.restaurant.service.IPlatoService;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/menu")

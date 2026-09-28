@@ -1,20 +1,24 @@
 package co.edu.eci.dosw.restaurant.security;
 
-import co.edu.eci.dosw.restaurant.persistence.entity.UsuarioEntity;
-import co.edu.eci.dosw.restaurant.repository.UsuarioRepository;
+import java.util.Optional;
+
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
-
-import java.util.Optional;
-
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
+
+import co.edu.eci.dosw.restaurant.persistence.entity.UsuarioEntity;
+import co.edu.eci.dosw.restaurant.repository.UsuarioRepository;
 
 @ExtendWith(MockitoExtension.class)
 class UserDetailsServiceImplTest {

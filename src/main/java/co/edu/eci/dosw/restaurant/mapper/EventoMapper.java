@@ -1,9 +1,10 @@
 package co.edu.eci.dosw.restaurant.mapper;
 
-import co.edu.eci.dosw.restaurant.model.domain.EventoRestaurante;
-import co.edu.eci.dosw.restaurant.persistence.document.EventoRestauranteDocument;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+
+import co.edu.eci.dosw.restaurant.model.domain.EventoRestaurante;
+import co.edu.eci.dosw.restaurant.persistence.document.EventoRestauranteDocument;
 
 @Mapper(componentModel = "spring")
 public interface EventoMapper {

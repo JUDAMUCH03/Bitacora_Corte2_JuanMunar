@@ -1,11 +1,13 @@
 package co.edu.eci.dosw.restaurant.validator;
 
+import org.springframework.stereotype.Component;
+
+import lombok.RequiredArgsConstructor;
+
 import co.edu.eci.dosw.restaurant.exception.ConflictoException;
 import co.edu.eci.dosw.restaurant.exception.ReglaDeNegocioException;
 import co.edu.eci.dosw.restaurant.model.domain.Plato;
 import co.edu.eci.dosw.restaurant.repository.PlatoRepository;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor

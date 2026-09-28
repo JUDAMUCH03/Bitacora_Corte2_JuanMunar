@@ -1,13 +1,8 @@
 package co.edu.eci.dosw.restaurant.controller;
 
-import co.edu.eci.dosw.restaurant.dto.request.LoginRequestDTO;
-import co.edu.eci.dosw.restaurant.dto.response.TokenResponseDTO;
-import co.edu.eci.dosw.restaurant.security.JwtUtil;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import java.util.List;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -18,7 +13,14 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
+import co.edu.eci.dosw.restaurant.dto.request.LoginRequestDTO;
+import co.edu.eci.dosw.restaurant.dto.response.TokenResponseDTO;
+import co.edu.eci.dosw.restaurant.security.JwtUtil;
 
 @RestController
 @RequestMapping("/auth")

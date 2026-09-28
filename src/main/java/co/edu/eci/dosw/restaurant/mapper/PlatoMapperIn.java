@@ -1,9 +1,10 @@
 package co.edu.eci.dosw.restaurant.mapper;
 
-import co.edu.eci.dosw.restaurant.dto.request.PlatoRequestDTO;
-import co.edu.eci.dosw.restaurant.model.domain.Plato;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+
+import co.edu.eci.dosw.restaurant.dto.request.PlatoRequestDTO;
+import co.edu.eci.dosw.restaurant.model.domain.Plato;
 
 @Mapper(componentModel = "spring")
 public interface PlatoMapperIn {

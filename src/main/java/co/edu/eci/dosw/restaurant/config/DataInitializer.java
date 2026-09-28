@@ -1,14 +1,16 @@
 package co.edu.eci.dosw.restaurant.config;
 
-import co.edu.eci.dosw.restaurant.persistence.entity.UsuarioEntity;
-import co.edu.eci.dosw.restaurant.repository.UsuarioRepository;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import java.util.List;
+
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
-import java.util.List;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
+import co.edu.eci.dosw.restaurant.persistence.entity.UsuarioEntity;
+import co.edu.eci.dosw.restaurant.repository.UsuarioRepository;
 
 @Component
 @Slf4j

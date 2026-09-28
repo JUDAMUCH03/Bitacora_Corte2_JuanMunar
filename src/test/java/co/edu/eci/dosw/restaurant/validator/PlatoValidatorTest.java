@@ -1,18 +1,21 @@
 package co.edu.eci.dosw.restaurant.validator;
 
-import co.edu.eci.dosw.restaurant.exception.ConflictoException;
-import co.edu.eci.dosw.restaurant.exception.ReglaDeNegocioException;
-import co.edu.eci.dosw.restaurant.model.domain.Plato;
-import co.edu.eci.dosw.restaurant.repository.PlatoRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.when;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import co.edu.eci.dosw.restaurant.exception.ConflictoException;
+import co.edu.eci.dosw.restaurant.exception.ReglaDeNegocioException;
+import co.edu.eci.dosw.restaurant.model.domain.Plato;
+import co.edu.eci.dosw.restaurant.repository.PlatoRepository;
 
 @ExtendWith(MockitoExtension.class)
 class PlatoValidatorTest {
