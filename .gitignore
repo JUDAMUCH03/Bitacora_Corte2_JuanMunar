@@ -62,3 +62,8 @@ Thumbs.db
 # Scratch / Temp #
 tmp/
 temp/
+
+# Environment variables & secrets #
+.env
+*.p12
+
