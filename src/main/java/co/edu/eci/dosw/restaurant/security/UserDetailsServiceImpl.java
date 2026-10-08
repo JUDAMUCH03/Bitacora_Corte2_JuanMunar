@@ -2,10 +2,10 @@ package co.edu.eci.dosw.restaurant.security;
 
 import java.util.List;
 
+import org.springframework.context.annotation.Primary;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
@@ -15,10 +15,11 @@ import lombok.extern.slf4j.Slf4j;
 import co.edu.eci.dosw.restaurant.persistence.entity.UsuarioEntity;
 import co.edu.eci.dosw.restaurant.repository.UsuarioRepository;
 
-@Service
+@Service("usuarioDetailsService")
+@Primary
 @Slf4j
 @RequiredArgsConstructor
-public class UserDetailsServiceImpl implements UserDetailsService {
+public class UserDetailsServiceImpl implements UsuarioDetailsService {
 
     private final UsuarioRepository usuarioRepository;
 
@@ -31,7 +32,11 @@ public class UserDetailsServiceImpl implements UserDetailsService {
                     return new UsernameNotFoundException("Usuario no encontrado con email: " + email);
                 });
 
-        boolean enabled = Boolean.TRUE.equals(usuario.getActivo());
+        boolean enabled = usuario.getActivo() == null || Boolean.TRUE.equals(usuario.getActivo());
+        String rol = usuario.getRol();
+        if (rol != null && !rol.startsWith("ROLE_")) {
+            rol = "ROLE_" + rol;
+        }
 
         return new User(
                 usuario.getEmail(),
@@ -40,7 +45,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
                 true,
                 true,
                 true,
-                List.of(new SimpleGrantedAuthority(usuario.getRol()))
+                rol != null ? List.of(new SimpleGrantedAuthority(rol)) : List.of()
         );
     }
 }
