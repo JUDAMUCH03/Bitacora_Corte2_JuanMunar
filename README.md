@@ -134,30 +134,24 @@ Validación de ausencia de vulnerabilidades de seguridad, cero deuda técnica cr
 ### 8.2 Evidencias de Autenticación y Autorización en Swagger UI
 
 #### Login Exitoso con JWT (200 OK)
-> *Request de autenticación contra `/api/v1/auth/login` y retorno de token Bearer:*
-<!-- CAPTURA: Login exitoso en Swagger con request y respuesta JWT -->
-![Login Exitoso Swagger](docs/images/sec-01-login-jwt.png)
+<img width="1399" height="622" alt="Captura de pantalla 2026-10-08 163305" src="https://github.com/user-attachments/assets/d71f3c00-c6ff-4ac9-8c8a-6294ed0fb475" />
+
 
 #### Configuración de Autenticación ("Authorize") en Swagger UI
-> *Modal de autorización con el Bearer Token inyectado:*
-<!-- CAPTURA: Botón Authorize en Swagger UI con el token ingresado -->
-![Authorize Swagger UI](docs/images/sec-02-swagger-authorize.png)
+<img width="645" height="278" alt="Captura de pantalla 2026-10-08 163518" src="https://github.com/user-attachments/assets/d287b288-321e-4e66-94e0-b3daa0e2160f" />
+
 
 #### Invocación sin Token (401 Unauthorized)
-> *Petición a endpoint protegido sin cabecera Authorization:*
-<!-- CAPTURA: Retorno 401 Unauthorized sin token -->
-![401 Unauthorized](docs/images/sec-03-unauthorized-401.png)
+<img width="1398" height="557" alt="Captura de pantalla 2026-10-08 163628" src="https://github.com/user-attachments/assets/4bfd0000-49bc-4e5f-83e1-2768df9296eb" />
+
 
 #### Invocación con Rol Incorrecto (403 Forbidden)
-> *Intento de creación con rol sin privilegios (ej. `ROLE_CLIENTE` invocando POST `/api/v1/platos`):*
-<!-- CAPTURA: Retorno 403 Forbidden por RBAC -->
-![403 Forbidden](docs/images/sec-04-forbidden-403.png)
+<img width="1397" height="638" alt="Captura de pantalla 2026-10-08 164016" src="https://github.com/user-attachments/assets/03d72e4a-a218-4f20-aeb5-58ae0e56c447" />
+
 
 ### 8.3 Cabeceras de Seguridad Perimetral OWASP (Postman)
-> *Respuesta HTTP evidenciando cabeceras de protección activa:*  
-> `X-Frame-Options: DENY`, `Content-Security-Policy: default-src 'self'`, `X-Content-Type-Options: nosniff`, `X-XSS-Protection: 1; mode=block`.
-<!-- CAPTURA: Cabeceras de seguridad en Postman -->
-![Headers OWASP Postman](docs/images/sec-05-headers-owasp.png)
+<img width="1084" height="503" alt="Captura de pantalla 2026-10-08 164707" src="https://github.com/user-attachments/assets/dd41dab7-d88e-4b8e-8b1c-be6fa733ad65" />
+
 
 ### 8.4 Checklist de Mitigación OWASP Top 10
 
@@ -170,9 +164,7 @@ Validación de ausencia de vulnerabilidades de seguridad, cero deuda técnica cr
 | **A07: Identification and Authentication Failures** | ✅ Mitigado | JWT con expiración estricta (1 hora), invalidación perimetral de credenciales y validación de claims. |
 
 ### 8.5 Pruebas Automatizadas de Seguridad (`mvn test`)
-> *Ejecución de la batería completa de pruebas unitarias y de seguridad en verde:*
-<!-- CAPTURA: Resultado de mvn test con pruebas de seguridad en verde -->
-![Pruebas Seguridad mvn test](docs/images/sec-06-mvn-test-green.png)
+<img width="1036" height="300" alt="Captura de pantalla 2026-10-08 165039" src="https://github.com/user-attachments/assets/37efbf30-a758-4a3b-8ddc-fce9fedd794c" />
 
 ---
 
@@ -195,26 +187,20 @@ docker compose logs -f api
 ### 9.2 Verificación de Contenedores y Salud del Stack
 
 #### Estado de Servicios (`docker compose ps`)
-> *Servicios `restaurante-api`, `restaurante-postgres` (healthy) y `restaurante-mongo` en ejecución:*
-<!-- CAPTURA: docker compose ps con servicios healthy -->
-![Docker Compose PS Healthy](docs/images/docker-01-compose-ps.png)
+<img width="1855" height="169" alt="Captura de pantalla 2026-10-08 165812" src="https://github.com/user-attachments/assets/42d2bd3e-80be-41a4-b6b4-6ee675529aac" />
+
 
 #### Swagger UI Funcionando en Contenedor Local
-> *Acceso disponible en `http://localhost:8080/swagger-ui/index.html`:*
-<!-- CAPTURA: Swagger corriendo en contenedor local -->
-![Swagger Local Docker](docs/images/docker-02-swagger-local.png)
+<img width="972" height="314" alt="Captura de pantalla 2026-10-08 170153" src="https://github.com/user-attachments/assets/469fcf80-b65d-4f97-81da-2dd49bc3fed3" />
+
 
 #### Logs de Arranque de la API y Conexión a Base de Datos
-> *Salida de logs del contenedor confirmando conexión a PostgreSQL y MongoDB:*
-<!-- CAPTURA: Logs de la API en contenedor mostrando arranque exitoso -->
-![Logs Docker API](docs/images/docker-03-api-logs.png)
+<img width="1849" height="107" alt="Captura de pantalla 2026-10-08 170546" src="https://github.com/user-attachments/assets/eba1c333-522a-43e7-bb48-e84448776fa5" />
+
 
 ### 9.3 Imagen Pública en Docker Hub
-- **Repositorio Oficial:** [`${DOCKERHUB_USERNAME}/restaurante-api`](https://hub.docker.com/)
+<img width="1897" height="850" alt="Captura de pantalla 2026-10-08 170625" src="https://github.com/user-attachments/assets/860219a9-fdf4-439c-bf89-4eec2a44bc9e" />
 
-> *Vista del repositorio en Docker Hub con tags publicados:*
-<!-- CAPTURA: Página de Docker Hub con la imagen -->
-![Docker Hub Repository](docs/images/docker-04-dockerhub.png)
 
 ### 9.4 Variables de Entorno del Contenedor
 
@@ -240,8 +226,7 @@ docker compose logs -f api
 ## 10. CI/CD y Despliegue Cloud (GitHub Actions & Azure)
 
 ### 10.1 URLs de los Ambientes en la Nube
-- **Ambiente QA:** [https://restaurante-qa.azurewebsites.net/swagger-ui/index.html](https://restaurante-qa.azurewebsites.net/swagger-ui/index.html)
-- **Ambiente PROD:** [https://restaurante-prod.azurewebsites.net/swagger-ui/index.html](https://restaurante-prod.azurewebsites.net/swagger-ui/index.html)
+- **Ambiente QA:** https://bluevelvet-api-qa-jmunar-fdfpf4c2azaugtce.canadacentral-01.azurewebsites.net/swagger-ui/index.html#/
 
 ### 10.2 Estrategia de Ambientes y Flujo de Despliegue
 
@@ -257,14 +242,10 @@ docker compose logs -f api
 ### 10.4 Evidencias de Ejecución de Pipelines
 
 #### Pipeline de CI/CD QA en Verde
-> *Ejecución exitosa de jobs `test`, `build-and-push` y `deploy-qa`:*
-<!-- CAPTURA: Pipeline GitHub Actions en verde -->
-![Pipeline QA Verde](docs/images/cicd-01-pipeline-green.png)
+<img width="1321" height="558" alt="Captura de pantalla 2026-10-08 170656" src="https://github.com/user-attachments/assets/33446a77-98da-4926-8aa4-c7e033a956a6" />
 
 #### Puerta de Aprobación Manual en Producción
-> *Estado "Waiting for review" en el Environment `production` de GitHub Actions:*
-<!-- CAPTURA: Aprobación manual del deploy a PROD -->
-![Aprobación Manual PROD](docs/images/cicd-02-manual-approval.png)
+<img width="1899" height="700" alt="Captura de pantalla 2026-10-08 170857" src="https://github.com/user-attachments/assets/dde18621-e2fc-497c-b8a9-87ce5c0a412e" />
 
 #### Versionamiento de Imágenes en Docker Hub
 > *Tags semánticos generados automáticamente en el registry:*
@@ -272,9 +253,7 @@ docker compose logs -f api
 ![Tags Docker Hub](docs/images/cicd-03-dockerhub-tags.png)
 
 #### Azure App Service Ejecutando el Contenedor
-> *Panel de Azure Portal mostrando el estado activo del contenedor en App Service:*
-<!-- CAPTURA: App Service en Azure con contenedor corriendo -->
-![Azure App Service Contenedor](docs/images/cicd-04-azure-appservice.png)
+<img width="1584" height="899" alt="Captura de pantalla 2026-10-08 170925" src="https://github.com/user-attachments/assets/da3666e9-4a12-401c-9b80-82d51600d52a" />
 
 ### 10.5 Secretos Configurados en GitHub Actions
 Configurados en **Settings** $\rightarrow$ **Secrets and variables** $\rightarrow$ **Actions**:
