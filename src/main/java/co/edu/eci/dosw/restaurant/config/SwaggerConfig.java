@@ -11,15 +11,16 @@ import io.swagger.v3.oas.models.security.SecurityRequirement;
 import io.swagger.v3.oas.models.security.SecurityScheme;
 
 /**
- * Configuración global de OpenAPI 3 / Swagger para Blue Velvet con soporte Bearer JWT.
+ * Configuración OpenAPI 3 / Swagger con esquema de autenticación Bearer JWT (bearerAuth).
+ * Habilita el candado y botón "Authorize" en Swagger UI según la Guía S10 DOSW.
  */
 @Configuration
-public class OpenApiConfig {
+public class SwaggerConfig {
 
-    private static final String SECURITY_SCHEME_NAME = "BearerAuth";
+    private static final String SECURITY_SCHEME_NAME = "bearerAuth";
 
     @Bean
-    public OpenAPI blueVelvetOpenAPI() {
+    public OpenAPI customOpenAPI() {
         return new OpenAPI()
                 .info(new Info()
                         .title("🍸 Blue Velvet — Coctelería de Autor API")
@@ -35,6 +36,6 @@ public class OpenApiConfig {
                                 .type(SecurityScheme.Type.HTTP)
                                 .scheme("bearer")
                                 .bearerFormat("JWT")
-                                .description("Ingrese el token JWT obtenido en el endpoint POST /auth/login")));
+                                .description("Ingrese el token JWT obtenido en el endpoint POST /api/v1/auth/login")));
     }
 }
