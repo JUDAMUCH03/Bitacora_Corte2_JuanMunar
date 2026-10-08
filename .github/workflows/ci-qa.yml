@@ -98,35 +98,39 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-  deploy-qa:
+  ddeploy-qa:
     name: 🚀 Despliegue Automático en Azure QA
     needs: build-and-push
     runs-on: ubuntu-latest
-    environment: qa
+    if: github.ref == 'refs/heads/develop' || github.event_name == 'workflow_dispatch'
     steps:
-      - name: Autenticación en Azure con Service Principal
-        uses: azure/login@v1
+      - name: Autenticación en Azure
+        uses: azure/login@v2
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-      - name: Desplegar contenedor en Azure App Service (QA)
+      # Reemplazo robusto usando Azure CLI nativo
+      - name: Inyectar variables de entorno en Azure App Service QA
+        uses: azure/cli@v2
+        with:
+          inlineScript: |
+            az webapp config appsettings set \
+              --name "${{ secrets.AZURE_WEBAPP_NAME_QA }}" \
+              --resource-group "rg-bluevelvet" \
+              --settings \
+                SPRING_PROFILES_ACTIVE="docker" \
+                SERVER_PORT="8080" \
+                PORT="8080" \
+                WEBSITES_PORT="8080" \
+                JWT_SECRET="${{ secrets.JWT_SECRET_QA }}" \
+                DB_HOST="${{ secrets.DB_HOST_QA }}" \
+                DB_PORT="5432" \
+                DB_NAME="restaurante" \
+                DB_USER="blueadmin" \
+                DB_PASSWORD="${{ secrets.DB_PASSWORD_QA }}"
+
+      - name: Desplegar Contenedor Docker en Azure App Service
         uses: azure/webapps-deploy@v3
         with:
           app-name: ${{ secrets.AZURE_WEBAPP_NAME_QA }}
-          images: ${{ env.IMAGE_NAME }}:qa-latest
-
-      - name: Inyectar variables de entorno en Azure App Service QA
-        uses: azure/appservice-settings@v1
-        with:
-          app-name: ${{ secrets.AZURE_WEBAPP_NAME_QA }}
-          app-settings-json: |
-            [
-              {"name": "SPRING_PROFILES_ACTIVE", "value": "docker"},
-              {"name": "SERVER_PORT", "value": "8080"},
-              {"name": "JWT_SECRET", "value": "${{ secrets.JWT_SECRET_QA }}"},
-              {"name": "DB_HOST", "value": "${{ secrets.DB_HOST_QA }}"},
-              {"name": "DB_PORT", "value": "5432"},
-              {"name": "DB_NAME", "value": "restaurante"},
-              {"name": "DB_USER", "value": "blueadmin"},
-              {"name": "DB_PASSWORD", "value": "${{ secrets.DB_PASSWORD_QA }}"}
-            ]
+          images: ${{ secrets.DOCKERHUB_USERNAME }}/restaurante-api:qa-latest
