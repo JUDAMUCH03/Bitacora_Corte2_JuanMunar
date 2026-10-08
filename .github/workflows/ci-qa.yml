@@ -12,7 +12,7 @@ env:
 jobs:
   test:
     name: 🧪 Pruebas Unitarias e Integración
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     services:
       postgres:
         image: postgres:16-alpine
@@ -36,7 +36,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Configurar Java 21 (Temurin)
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           java-version: '21'
           distribution: 'temurin'
@@ -63,7 +63,7 @@ jobs:
   build-and-push:
     name: 🐳 Build y Push Imagen QA a Docker Hub
     needs: test
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout del repositorio
         uses: actions/checkout@v4
@@ -88,7 +88,7 @@ jobs:
             type=sha,prefix=qa-,format=short
 
       - name: Compilar y publicar imagen Docker
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           context: .
           file: ./Dockerfile
@@ -98,10 +98,10 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-  ddeploy-qa:
+  deploy-qa:
     name: 🚀 Despliegue Automático en Azure QA
     needs: build-and-push
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     if: github.ref == 'refs/heads/develop' || github.event_name == 'workflow_dispatch'
     steps:
       - name: Autenticación en Azure
