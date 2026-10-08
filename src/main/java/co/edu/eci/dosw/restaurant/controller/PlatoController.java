@@ -40,7 +40,7 @@ public class PlatoController implements PlatoApi {
 
     @Override
     @GetMapping
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("permitAll()")
     public ResponseEntity<List<PlatoResponseDTO>> listarTodos() {
         log.info("REST: GET /api/v1/platos");
         List<Plato> platos = platoService.obtenerTodos();
@@ -49,7 +49,7 @@ public class PlatoController implements PlatoApi {
 
     @Override
     @GetMapping("/{id}")
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("permitAll()")
     public ResponseEntity<PlatoResponseDTO> obtenerPorId(@PathVariable Long id) {
         log.info("REST: GET /api/v1/platos/{}", id);
         Plato plato = platoService.obtenerPorId(id);
@@ -58,7 +58,7 @@ public class PlatoController implements PlatoApi {
 
     @Override
     @PostMapping
-    @PreAuthorize("hasRole('GERENTE')")
+    @PreAuthorize("hasAnyRole('CHEF', 'ADMIN')")
     public ResponseEntity<PlatoResponseDTO> crear(@RequestBody @Valid PlatoRequestDTO dto) {
         log.info("REST: POST /api/v1/platos - Nombre='{}'", dto.getNombre());
         Plato nuevoPlato = mapperIn.toDomain(dto);
@@ -69,7 +69,7 @@ public class PlatoController implements PlatoApi {
 
     @Override
     @PutMapping("/{id}")
-    @PreAuthorize("hasRole('GERENTE')")
+    @PreAuthorize("hasAnyRole('CHEF', 'ADMIN')")
     public ResponseEntity<PlatoResponseDTO> actualizar(
             @PathVariable Long id,
             @RequestBody @Valid PlatoRequestDTO dto) {
@@ -81,7 +81,7 @@ public class PlatoController implements PlatoApi {
 
     @Override
     @PatchMapping("/{id}/disponible")
-    @PreAuthorize("hasAnyRole('GERENTE', 'BARTENDER', 'MESERO')")
+    @PreAuthorize("hasAnyRole('CHEF', 'ADMIN', 'BARTENDER', 'MESERO')")
     public ResponseEntity<PlatoResponseDTO> cambiarDisponibilidad(
             @PathVariable Long id,
             @RequestParam boolean disponible) {
@@ -92,7 +92,7 @@ public class PlatoController implements PlatoApi {
 
     @Override
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('GERENTE')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> eliminar(@PathVariable Long id) {
         log.info("REST: DELETE /api/v1/platos/{}", id);
         platoService.eliminar(id);
