@@ -25,17 +25,24 @@ public class DataInitializer implements CommandLineRunner {
         if (usuarioRepository.count() == 0) {
             log.info("Inicializando usuarios por defecto en PostgreSQL (Blue Velvet)...");
 
-            UsuarioEntity gerente = UsuarioEntity.builder()
+            UsuarioEntity admin = UsuarioEntity.builder()
                     .email("admin@bluevelvet.com")
                     .password(passwordEncoder.encode("admin123"))
-                    .rol("ROLE_GERENTE")
+                    .rol("ROLE_ADMIN")
                     .activo(true)
                     .build();
 
-            UsuarioEntity bartender = UsuarioEntity.builder()
-                    .email("bar@bluevelvet.com")
-                    .password(passwordEncoder.encode("bar123"))
-                    .rol("ROLE_BARTENDER")
+            UsuarioEntity chef = UsuarioEntity.builder()
+                    .email("chef@bluevelvet.com")
+                    .password(passwordEncoder.encode("chef123"))
+                    .rol("ROLE_CHEF")
+                    .activo(true)
+                    .build();
+
+            UsuarioEntity cliente = UsuarioEntity.builder()
+                    .email("cliente@bluevelvet.com")
+                    .password(passwordEncoder.encode("cliente123"))
+                    .rol("ROLE_CLIENTE")
                     .activo(true)
                     .build();
 
@@ -46,7 +53,14 @@ public class DataInitializer implements CommandLineRunner {
                     .activo(true)
                     .build();
 
-            usuarioRepository.saveAll(List.of(gerente, bartender, mesero));
+            UsuarioEntity bartender = UsuarioEntity.builder()
+                    .email("bar@bluevelvet.com")
+                    .password(passwordEncoder.encode("bar123"))
+                    .rol("ROLE_BARTENDER")
+                    .activo(true)
+                    .build();
+
+            usuarioRepository.saveAll(List.of(admin, chef, cliente, mesero, bartender));
             log.info("Usuarios iniciales creados exitosamente.");
         } else {
             log.info("Base de datos de usuarios ya contiene registros. Omitiendo inicialización.");

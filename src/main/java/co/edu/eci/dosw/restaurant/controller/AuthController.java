@@ -22,8 +22,11 @@ import co.edu.eci.dosw.restaurant.dto.request.LoginRequestDTO;
 import co.edu.eci.dosw.restaurant.dto.response.TokenResponseDTO;
 import co.edu.eci.dosw.restaurant.security.JwtUtil;
 
+/**
+ * Controlador REST para endpoints de autenticación y emisión de tokens Bearer JWT.
+ */
 @RestController
-@RequestMapping("/auth")
+@RequestMapping({"/api/v1/auth", "/auth"})
 @RequiredArgsConstructor
 @Slf4j
 @Tag(name = "Autenticación", description = "Endpoints de autenticación y emisión de tokens JWT")
@@ -35,10 +38,10 @@ public class AuthController {
     @PostMapping("/login")
     @Operation(summary = "Iniciar sesión", description = "Autentica credenciales en PostgreSQL y retorna un token JWT válido")
     public ResponseEntity<TokenResponseDTO> login(@RequestBody @Valid LoginRequestDTO request) {
-        log.info("Intento de login para usuario: {}", request.getEmail());
+        log.info("Intento de login para usuario: {}", request.email());
 
         Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
+                new UsernamePasswordAuthenticationToken(request.email(), request.password())
         );
 
         List<String> roles = authentication.getAuthorities().stream()
@@ -47,7 +50,7 @@ public class AuthController {
 
         String token = jwtUtil.generarToken(authentication.getName(), roles);
 
-        log.info("Login exitoso para usuario: {}. Token JWT emitido.", request.getEmail());
+        log.info("Login exitoso para usuario: {}. Token JWT emitido.", request.email());
         return ResponseEntity.ok(new TokenResponseDTO(token));
     }
 }

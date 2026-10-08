@@ -13,7 +13,19 @@ spring:
   data:
     mongodb:
       uri: ${SPRING_DATA_MONGODB_URI:mongodb://localhost:27017/blue_velvet_events}
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: ${GOOGLE_CLIENT_ID:dummy-id}
+            client-secret: ${GOOGLE_CLIENT_SECRET:dummy-secret}
+            scope:
+              - openid
+              - profile
+              - email
 
 jwt:
-  secret: ${JWT_SECRET:VGVzdFNlY3JldEtleVRlc3RTZWNyZXRLZXlUZXN0U2VjMTIzNDU2Nzg=} # Mínimo 256 bits Base64
-  expiration: 86400000 # 24 horas
+  secret: ${JWT_SECRET:TXkgc3VwZXIgc2VjcmV0IGtleSBwYXJhIGVsIHJlc3RhdXJhbnRl} # Mínimo 44 caracteres Base64
+  expiration-ms: ${JWT_EXPIRATION:3600000} # 1 hora
+  expiration: ${jwt.expiration-ms}
