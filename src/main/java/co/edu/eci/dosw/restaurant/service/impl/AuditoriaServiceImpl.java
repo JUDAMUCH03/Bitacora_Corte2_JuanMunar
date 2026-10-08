@@ -10,7 +10,9 @@ import lombok.extern.slf4j.Slf4j;
 
 import co.edu.eci.dosw.restaurant.mapper.EventoMapper;
 import co.edu.eci.dosw.restaurant.model.domain.EventoRestaurante;
+import co.edu.eci.dosw.restaurant.persistence.document.EventoAuditoria;
 import co.edu.eci.dosw.restaurant.persistence.document.EventoRestauranteDocument;
+import co.edu.eci.dosw.restaurant.repository.AuditoriaRepository;
 import co.edu.eci.dosw.restaurant.repository.EventoRestauranteRepository;
 import co.edu.eci.dosw.restaurant.service.IAuditoriaService;
 
@@ -20,6 +22,7 @@ import co.edu.eci.dosw.restaurant.service.IAuditoriaService;
 public class AuditoriaServiceImpl implements IAuditoriaService {
 
     private final EventoRestauranteRepository eventoRepository;
+    private final AuditoriaRepository auditoriaRepository;
     private final EventoMapper eventoMapper;
 
     @Override
@@ -52,5 +55,27 @@ public class AuditoriaServiceImpl implements IAuditoriaService {
         return eventoRepository.findByTipoAndTimestampBetween(tipo, desde, hasta).stream()
                 .map(eventoMapper::toDomain)
                 .toList();
+    }
+
+    @Override
+    public EventoAuditoria registrarAuditoria(String tipoEvento, String entidadId, String detalle, String usuario) {
+        log.info("Registrando evento en auditoría KDS MongoDB: tipo='{}', entidadId='{}', usuario='{}'",
+                tipoEvento, entidadId, usuario);
+
+        EventoAuditoria evento = EventoAuditoria.builder()
+                .tipoEvento(tipoEvento)
+                .entidadId(entidadId)
+                .detalle(detalle)
+                .usuario(usuario != null ? usuario : "SYSTEM")
+                .timestamp(LocalDateTime.now())
+                .build();
+
+        return auditoriaRepository.save(evento);
+    }
+
+    @Override
+    public List<EventoAuditoria> listarUltimosEventos() {
+        log.debug("Consultando los últimos 50 eventos de auditoría en MongoDB");
+        return auditoriaRepository.findTop50ByOrderByTimestampDesc();
     }
 }

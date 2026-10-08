@@ -44,6 +44,20 @@ public class GlobalExceptionHandler {
     }
 
     /**
+     * HTTP 400 - Violación de validación de negocio.
+     */
+    @ExceptionHandler({ValidacionException.class, IllegalArgumentException.class})
+    public ResponseEntity<ErrorResponseDTO> handleValidacionNegocio(
+            RuntimeException ex,
+            HttpServletRequest request) {
+
+        log.warn("Fallo de validación de negocio en [{}]: {}", request.getRequestURI(), ex.getMessage());
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(buildError(HttpStatus.BAD_REQUEST.value(), "Bad Request", ex.getMessage(), request.getRequestURI()));
+    }
+
+    /**
      * HTTP 404 - Recurso inexistente en el sistema.
      */
     @ExceptionHandler(RecursoNoEncontradoException.class)
