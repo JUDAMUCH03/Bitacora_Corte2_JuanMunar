@@ -106,6 +106,6 @@ jobs:
               {"name": "DB_HOST", "value": "${{ secrets.DB_HOST_QA }}"},
               {"name": "DB_PORT", "value": "5432"},
               {"name": "DB_NAME", "value": "restaurante"},
-              {"name": "DB_USER", "value": "postgres"},
+              {"name": "DB_USER", "value": "blueadmin"},
               {"name": "DB_PASSWORD", "value": "${{ secrets.DB_PASSWORD_QA }}"}
             ]
