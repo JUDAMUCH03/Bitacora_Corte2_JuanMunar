@@ -58,24 +58,19 @@
 ### 4.1 Diagrama de Clases
 Modela las entidades del dominio, sus atributos, relaciones y los servicios que orquestan las reglas de negocio.
 
-<img width="757" height="827" alt="image" src="https://github.com/user-attachments/assets/02dc51ae-738a-42dc-b76b-eb4f190d2239" />
+<img width="940" height="811" alt="clasesBV" src="https://github.com/user-attachments/assets/ad9c7fca-915c-4bea-9cb4-52563710c925" />
 
 ### 4.2 Diagrama de Componentes General
 Vista macro de los componentes del sistema y su organización por capas, evidenciando el flujo de dependencias hacia el dominio.
 
-<img width="780" height="946" alt="image" src="https://github.com/user-attachments/assets/af972482-e60a-4310-89bf-2e2abd65ce58" />
+<img width="836" height="389" alt="Captura de pantalla 2026-10-08 173023" src="https://github.com/user-attachments/assets/70e13592-4b60-4751-a25a-79f207e8f099" />
 
 ### 4.3 Diagrama de Componentes Específicos
-Detalle de los componentes del **módulo de órdenes y comandas**, que concentra las reglas de negocio críticas.
+Vista detallada del dominio.
 
-<img width="838" height="844" alt="image" src="https://github.com/user-attachments/assets/b6013214-f1f2-4163-a891-9ba3c9ed5658" />
+<img width="1519" height="1062" alt="Comp" src="https://github.com/user-attachments/assets/236a6017-54e6-49c4-8405-f9ad8d864667" />
 
-### 4.4 Diagrama de Secuencia
-Flujo completo de **creación de una orden, personalización de un ítem con destilado, mutación del destilado y avance del estado en el KDS**.
-
-<img width="1677" height="940" alt="image" src="https://github.com/user-attachments/assets/e9e0ed7b-623c-49b2-ae08-d9f0001c2c3f" />
-
-### 4.5 Diagrama de Contexto C4
+### 4.4 Diagrama de Contexto C4
 <img width="992" height="582" alt="C4" src="https://github.com/user-attachments/assets/a851d19c-fefc-47e8-a7d2-119e6e460c94" />
 
 ---
@@ -236,8 +231,7 @@ docker compose logs -f api
 | **PROD** | `push` de tags semánticos (`v*.*.*`). | Despliegue controlado con **aprobación manual obligatoria** (*Required Reviewers*) vía GitHub Environment `production`. | `vX.Y.Z`, `latest` |
 
 ### 10.3 Diagrama de Despliegue en la Nube
-<!-- CAPTURA: Diagrama de despliegue en alta resolución -->
-![Diagrama de Despliegue](docs/images/cicd-00-deployment-diagram.png)
+<img width="1279" height="932" alt="Despliegue drawio" src="https://github.com/user-attachments/assets/685bdd43-406d-4636-abf3-23bd78d1f4d4" />
 
 ### 10.4 Evidencias de Ejecución de Pipelines
 
