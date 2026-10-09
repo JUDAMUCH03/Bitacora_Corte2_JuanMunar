@@ -1,0 +1,136 @@
+name: CD — Despliegue a Producción
+
+on:
+  push:
+    branches: [ main ]
+    tags:
+      - 'v*.*.*'
+  workflow_dispatch:
+
+env:
+  IMAGE_NAME: ${{ secrets.DOCKERHUB_USERNAME }}/restaurante-api
+
+jobs:
+  test:
+    name: 🧪 Verificación de Calidad en Release (Pre-Deploy)
+    runs-on: ubuntu-24.04
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: blue_velvet_db
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      mongo:
+        image: mongo:7
+        ports:
+          - 27017:27017
+    steps:
+      - name: Checkout del código fuente
+        uses: actions/checkout@v4
+
+      - name: Configurar Java 21 (Temurin)
+        uses: actions/setup-java@v5
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+          cache: 'maven'
+
+      - name: Ejecutar Suite Completa de Pruebas
+        run: mvn clean test --no-transfer-progress
+
+  build-and-push-prod:
+    name: 🐳 Empaquetar y Publicar Imagen PROD en Docker Hub
+    needs: test
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout del código fuente
+        uses: actions/checkout@v4
+
+      - name: Configurar Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Autenticación en Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Extraer metadatos para Docker
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.IMAGE_NAME }}
+          tags: |
+            type=raw,value=latest
+            type=raw,value=prod-latest
+            type=sha,prefix=prod-,format=short
+            type=semver,pattern={{version}}
+
+      - name: Compilar y publicar imagen Docker
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  deploy-prod:
+    name: 🚀 Despliegue Controlado en Azure App Service PROD
+    needs: build-and-push-prod
+    runs-on: ubuntu-24.04
+    environment: production
+    steps:
+      - name: Autenticación en Azure con Service Principal
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      # Decisión FinOps: Reutilización de la base de datos de PostgreSQL para optimización de costos en Azure
+      - name: Inyectar variables de entorno en Azure App Service PROD (CLI Nativo)
+        uses: azure/cli@v2
+        with:
+          inlineScript: |
+            az webapp config appsettings set \
+              --name "${{ secrets.AZURE_WEBAPP_NAME_PROD }}" \
+              --resource-group "rg-bluevelvet" \
+              --settings \
+                SPRING_PROFILES_ACTIVE="docker" \
+                SERVER_PORT="8080" \
+                PORT="8080" \
+                WEBSITES_PORT="8080" \
+                JWT_SECRET="${{ secrets.JWT_SECRET_PROD }}" \
+                DB_HOST="${{ secrets.DB_HOST_QA }}" \
+                DB_PORT="5432" \
+                DB_NAME="restaurante" \
+                DB_USER="blueadmin" \
+                DB_PASSWORD="${{ secrets.DB_PASSWORD_QA }}"
+
+      - name: Desplegar Contenedor Docker en Azure PROD
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: ${{ secrets.AZURE_WEBAPP_NAME_PROD }}
+          images: ${{ env.IMAGE_NAME }}:prod-latest
+
+  notify:
+    name: 📣 Resumen de Entrega Productiva
+    needs: [build-and-push-prod, deploy-prod]
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Publicar estado de despliegue
+        run: |
+          echo "======================================================="
+          echo "✅ Despliegue a PRODUCCIÓN completado con éxito."
+          echo "Etiqueta / Versión: ${{ github.ref_name }}"
+          echo "URL: https://${{ secrets.AZURE_WEBAPP_NAME_PROD }}.azurewebsites.net/swagger-ui/index.html"
+          echo "======================================================="

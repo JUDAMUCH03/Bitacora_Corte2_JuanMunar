@@ -1,0 +1,104 @@
+package co.edu.eci.dosw.restaurant.exception;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.core.AuthenticationException;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import co.edu.eci.dosw.restaurant.dto.response.ErrorResponseDTO;
+
+class GlobalExceptionHandlerTest {
+
+    private GlobalExceptionHandler handler;
+    private MockHttpServletRequest request;
+
+    @BeforeEach
+    void setUp() {
+        handler = new GlobalExceptionHandler();
+        request = new MockHttpServletRequest();
+        request.setRequestURI("/api/v1/platos/1");
+    }
+
+    @Test
+    @DisplayName("handleNotFound - retorna 404 y estructura estandarizada")
+    void handleNotFound_retorna404() {
+        RecursoNoEncontradoException ex = new RecursoNoEncontradoException("Plato", 1L);
+        ResponseEntity<ErrorResponseDTO> response = handler.handleNotFound(ex, request);
+
+        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertEquals(404, response.getBody().getStatus());
+        assertEquals("/api/v1/platos/1", response.getBody().getPath());
+    }
+
+    @Test
+    @DisplayName("handleConflicto - retorna 409 y mensaje de negocio")
+    void handleConflicto_retorna409() {
+        ConflictoException ex = new ConflictoException("Nombre duplicado");
+        ResponseEntity<ErrorResponseDTO> response = handler.handleConflicto(ex, request);
+
+        assertEquals(HttpStatus.CONFLICT, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertEquals(409, response.getBody().getStatus());
+        assertEquals("Nombre duplicado", response.getBody().getMessage());
+    }
+
+    @Test
+    @DisplayName("handleNegocioInvalido - retorna 422 para reglas de dominio")
+    void handleNegocioInvalido_retorna422() {
+        ReglaDeNegocioException ex = new ReglaDeNegocioException("Mocktail no admite alcohol");
+        ResponseEntity<ErrorResponseDTO> response = handler.handleNegocioInvalido(ex, request);
+
+        assertEquals(HttpStatus.UNPROCESSABLE_ENTITY, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertEquals(422, response.getBody().getStatus());
+    }
+
+    @Test
+    @DisplayName("handleAccessDenied - retorna 403 Forbidden y mensaje estandarizado (RBAC)")
+    void handleAccessDenied_retorna403() {
+        AccessDeniedException ex = new AccessDeniedException("Acceso denegado");
+        ResponseEntity<ErrorResponseDTO> response = handler.handleAccessDenied(ex, request);
+
+        assertEquals(HttpStatus.FORBIDDEN, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertEquals(403, response.getBody().getStatus());
+        assertEquals("Forbidden", response.getBody().getError());
+        assertTrue(response.getBody().getMessage().contains("No posee los privilegios necesarios"));
+    }
+
+    @Test
+    @DisplayName("handleAuthentication - retorna 401 Unauthorized y mensaje sanitizado")
+    void handleAuthentication_retorna401() {
+        AuthenticationException ex = new BadCredentialsException("Bad credentials");
+        ResponseEntity<ErrorResponseDTO> response = handler.handleAuthentication(ex, request);
+
+        assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertEquals(401, response.getBody().getStatus());
+        assertEquals("Unauthorized", response.getBody().getError());
+        assertEquals("Credenciales inválidas", response.getBody().getMessage());
+    }
+
+    @Test
+    @DisplayName("handleGeneral - retorna 500 sin exponer detalles sensibles (DevSecOps)")
+    void handleGeneral_retorna500Generico() {
+        Exception ex = new RuntimeException("Error inesperado de base de datos");
+        ResponseEntity<ErrorResponseDTO> response = handler.handleGeneral(ex, request);
+
+        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertEquals(500, response.getBody().getStatus());
+        assertEquals("Ha ocurrido un error interno en el servidor. Contacte al soporte técnico.",
+                response.getBody().getMessage());
+    }
+}
