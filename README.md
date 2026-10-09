@@ -242,12 +242,10 @@ docker compose logs -f api
 <img width="1899" height="700" alt="Captura de pantalla 2026-10-08 170857" src="https://github.com/user-attachments/assets/dde18621-e2fc-497c-b8a9-87ce5c0a412e" />
 
 #### Versionamiento de Imágenes en Docker Hub
-> *Tags semánticos generados automáticamente en el registry:*
-<!-- CAPTURA: Imagen en Docker Hub con tags de versión -->
-![Tags Docker Hub](docs/images/cicd-03-dockerhub-tags.png)
+<img width="1584" height="899" alt="Captura de pantalla 2026-10-08 170925" src="https://github.com/user-attachments/assets/da3666e9-4a12-401c-9b80-82d51600d52a" />
 
 #### Azure App Service Ejecutando el Contenedor
-<img width="1584" height="899" alt="Captura de pantalla 2026-10-08 170925" src="https://github.com/user-attachments/assets/da3666e9-4a12-401c-9b80-82d51600d52a" />
+<img width="1884" height="878" alt="Captura de pantalla 2026-10-08 171037" src="https://github.com/user-attachments/assets/75a358c4-dc89-45a3-abc9-7931697527a9" />
 
 ### 10.5 Secretos Configurados en GitHub Actions
 Configurados en **Settings** $\rightarrow$ **Secrets and variables** $\rightarrow$ **Actions**:
