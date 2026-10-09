@@ -221,8 +221,8 @@ docker compose logs -f api
 ## 10. CI/CD y Despliegue Cloud (GitHub Actions & Azure)
 
 ### 10.1 URLs de los Ambientes en la Nube
-- **Ambiente QA:** https://bluevelvet-api-qa-jmunar-fdfpf4c2azaugtce.canadacentral-01.azurewebsites.net/swagger-ui/index.html#/
-
+- **Ambiente QA:** https://bluevelvet-api-qa-jmunar-fdfpf4c2azaugtce.canadacentral-01.azurewebsites.net/swagger-ui/index.html
+- **Ambiente PROD:**https://bluevelvet-api-prod-jmunar-cuazejb0asckfwbb.canadacentral-01.azurewebsites.net/swagger-ui/index.html
 ### 10.2 Estrategia de Ambientes y Flujo de Despliegue
 
 | Ambiente | Disparador | Estrategia de Despliegue | Tag de Imagen Docker |
