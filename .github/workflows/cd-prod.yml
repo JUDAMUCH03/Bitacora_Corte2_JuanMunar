@@ -1,17 +1,18 @@
-name: CI — Build · Test · Deploy QA
+name: CD — Despliegue a Producción
 
 on:
   push:
-    branches: [ main, develop ]
-  pull_request:
-    branches: [ main, develop ]
+    branches: [ main ]
+    tags:
+      - 'v*.*.*'
+  workflow_dispatch:
 
 env:
   IMAGE_NAME: ${{ secrets.DOCKERHUB_USERNAME }}/restaurante-api
 
 jobs:
   test:
-    name: Pruebas Unitarias e Integración
+    name: 🧪 Verificación de Calidad en Release (Pre-Deploy)
     runs-on: ubuntu-24.04
     services:
       postgres:
@@ -32,40 +33,25 @@ jobs:
         ports:
           - 27017:27017
     steps:
-      - name: Checkout código fuente
+      - name: Checkout del código fuente
         uses: actions/checkout@v4
 
       - name: Configurar Java 21 (Temurin)
         uses: actions/setup-java@v5
         with:
-          java-version: '21'
           distribution: 'temurin'
+          java-version: '21'
+          cache: 'maven'
 
-      - name: Cache de dependencias Maven
-        uses: actions/cache@v4
-        with:
-          path: ~/.m2
-          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
-          restore-keys: |
-            ${{ runner.os }}-maven-
+      - name: Ejecutar Suite Completa de Pruebas
+        run: mvn clean test --no-transfer-progress
 
-      - name: Ejecutar batería de pruebas
-        run: mvn test --no-transfer-progress
-
-      - name: Publicar reporte de cobertura JaCoCo
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: coverage-report-qa
-          path: target/site/jacoco/
-          if-no-files-found: ignore
-
-  build-and-push:
-    name: Build y Push Imagen QA a Docker Hub
+  build-and-push-prod:
+    name: 🐳 Empaquetar y Publicar Imagen PROD en Docker Hub
     needs: test
     runs-on: ubuntu-24.04
     steps:
-      - name: Checkout del repositorio
+      - name: Checkout del código fuente
         uses: actions/checkout@v4
 
       - name: Configurar Docker Buildx
@@ -81,10 +67,12 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ${{ secrets.DOCKERHUB_USERNAME }}/restaurante-api
+          images: ${{ env.IMAGE_NAME }}
           tags: |
-            type=raw,value=qa-latest
-            type=sha,prefix=qa-,format=short
+            type=raw,value=latest
+            type=raw,value=prod-latest
+            type=sha,prefix=prod-,format=short
+            type=semver,pattern={{version}}
 
       - name: Compilar y publicar imagen Docker
         uses: docker/build-push-action@v6
@@ -97,38 +85,52 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-  deploy-qa:
-    name: 🚀 Despliegue Automático en Azure QA
-    needs: build-and-push
+  deploy-prod:
+    name: 🚀 Despliegue Controlado en Azure App Service PROD
+    needs: build-and-push-prod
     runs-on: ubuntu-24.04
-    if: github.ref == 'refs/heads/develop' || github.event_name == 'workflow_dispatch'
+    environment: production
     steps:
-      - name: Autenticación en Azure
+      - name: Autenticación en Azure con Service Principal
         uses: azure/login@v2
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-      - name: Inyectar variables de entorno en Azure App Service QA
+      # Decisión FinOps: Reutilización de la base de datos de PostgreSQL para optimización de costos en Azure
+      - name: Inyectar variables de entorno en Azure App Service PROD (CLI Nativo)
         uses: azure/cli@v2
         with:
           inlineScript: |
             az webapp config appsettings set \
-              --name "${{ secrets.AZURE_WEBAPP_NAME_QA }}" \
+              --name "${{ secrets.AZURE_WEBAPP_NAME_PROD }}" \
               --resource-group "rg-bluevelvet" \
               --settings \
                 SPRING_PROFILES_ACTIVE="docker" \
                 SERVER_PORT="8080" \
                 PORT="8080" \
                 WEBSITES_PORT="8080" \
-                JWT_SECRET="${{ secrets.JWT_SECRET_QA }}" \
+                JWT_SECRET="${{ secrets.JWT_SECRET_PROD }}" \
                 DB_HOST="${{ secrets.DB_HOST_QA }}" \
                 DB_PORT="5432" \
                 DB_NAME="restaurante" \
                 DB_USER="blueadmin" \
                 DB_PASSWORD="${{ secrets.DB_PASSWORD_QA }}"
 
-      - name: Desplegar Contenedor Docker en Azure App Service
+      - name: Desplegar Contenedor Docker en Azure PROD
         uses: azure/webapps-deploy@v3
         with:
-          app-name: ${{ secrets.AZURE_WEBAPP_NAME_QA }}
-          images: ${{ secrets.DOCKERHUB_USERNAME }}/restaurante-api:qa-latest
+          app-name: ${{ secrets.AZURE_WEBAPP_NAME_PROD }}
+          images: ${{ env.IMAGE_NAME }}:prod-latest
+
+  notify:
+    name: 📣 Resumen de Entrega Productiva
+    needs: [build-and-push-prod, deploy-prod]
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Publicar estado de despliegue
+        run: |
+          echo "======================================================="
+          echo "✅ Despliegue a PRODUCCIÓN completado con éxito."
+          echo "Etiqueta / Versión: ${{ github.ref_name }}"
+          echo "URL: https://${{ secrets.AZURE_WEBAPP_NAME_PROD }}.azurewebsites.net/swagger-ui/index.html"
+          echo "======================================================="
