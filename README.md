@@ -12,6 +12,7 @@
 - **Nombre Comercial:** Blue Velvet
 - **Resumen:** Gastrobar contemporáneo de alta gama especializado en coctelería de autor, mixología botánica, destilados premium y mocktails artesanales.
 - **Propósito del Sistema:** Plataforma web transaccional orientada a digitalizar el ciclo de vida del servicio en sala y barra. Abarca consulta de carta digital interactiva, personalización rigurosa de tragos, comanda electrónica y proyección en tiempo real en barra mediante **KDS (Kitchen Display System)**, mitigando errores de comunicación y eliminando el uso de papel.
+- - **Enlace mockups en Figma:** https://www.figma.com/make/Vcgs1wQfyADXk2LKRqlgXK/Blue-Velvet-cocktail-bar-app?fullscreen=1&t=RSltfy9dCrXvzkKh-1&code-node-id=0-6
 
 ---
 
