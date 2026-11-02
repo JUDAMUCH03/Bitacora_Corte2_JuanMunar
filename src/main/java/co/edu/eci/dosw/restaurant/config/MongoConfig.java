@@ -6,24 +6,32 @@ import org.springframework.boot.autoconfigure.mongo.MongoClientSettingsBuilderCu
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import lombok.extern.slf4j.Slf4j;
+
 /**
  * Configuración de resiliencia y timeouts para el cliente de MongoDB.
  * Limita el timeout de selección de servidor y conexión a 2 segundos
- * para evitar bloqueos del hilo HTTP ante caídas del clúster NoSQL.
+ * para evitar bloqueos del hilo HTTP ante caídas o lentitud del clúster NoSQL.
  */
 @Configuration
+@Slf4j
 public class MongoConfig {
 
     @Bean
     public MongoClientSettingsBuilderCustomizer mongoClientSettingsBuilderCustomizer() {
         return clientSettingsBuilder -> {
-            clientSettingsBuilder
-                    .applyToClusterSettings(cluster ->
-                            cluster.serverSelectionTimeout(2000, TimeUnit.MILLISECONDS))
-                    .applyToSocketSettings(socket -> {
-                        socket.connectTimeout(2000, TimeUnit.MILLISECONDS);
-                        socket.readTimeout(2000, TimeUnit.MILLISECONDS);
-                    });
+            try {
+                clientSettingsBuilder
+                        .applyToClusterSettings(cluster ->
+                                cluster.serverSelectionTimeout(2000, TimeUnit.MILLISECONDS))
+                        .applyToSocketSettings(socket -> {
+                            socket.connectTimeout(2000, TimeUnit.MILLISECONDS);
+                            socket.readTimeout(2000, TimeUnit.MILLISECONDS);
+                        });
+                log.info("Configuración de timeouts de MongoDB aplicada exitosamente (2000 ms).");
+            } catch (Exception e) {
+                log.warn("No se pudo aplicar customizer de timeouts a MongoDB: {}", e.getMessage());
+            }
         };
     }
 }

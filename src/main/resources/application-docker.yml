@@ -6,6 +6,7 @@ spring:
     driver-class-name: org.postgresql.Driver
   data:
     mongodb:
+      auto-index-creation: false
       uri: ${SPRING_DATA_MONGODB_URI:mongodb://${MONGO_USER:admin}:${MONGO_PASSWORD:admin}@${MONGO_HOST:mongo}:${MONGO_PORT:27017}/${MONGO_DB:restaurante}?authSource=admin&serverSelectionTimeoutMS=2000&connectTimeoutMS=2000}
   jpa:
     hibernate:
