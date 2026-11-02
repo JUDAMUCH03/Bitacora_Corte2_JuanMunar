@@ -71,6 +71,7 @@ jobs:
           tags: |
             type=raw,value=latest
             type=raw,value=prod-latest
+            type=raw,value=prod-${{ github.sha }}
             type=sha,prefix=prod-,format=short
             type=semver,pattern={{version}}
 
@@ -161,7 +162,7 @@ jobs:
         uses: azure/webapps-deploy@v3
         with:
           app-name: ${{ secrets.AZURE_WEBAPP_NAME_PROD }}
-          images: ${{ env.IMAGE_NAME }}:prod-latest
+          images: ${{ env.IMAGE_NAME }}:prod-${{ github.sha }}
 
       - name: Validar Salud en Azure PROD
         uses: azure/cli@v2
@@ -170,12 +171,15 @@ jobs:
         with:
           inlineScript: |
             APP_PROD=$(python3 -c "import os; print(os.environ.get('RAW_APP_PROD', '').strip(), end='')")
+            echo "Reiniciando Azure App Service PROD con la nueva imagen ${{ env.IMAGE_NAME }}:prod-${{ github.sha }}..."
+            az webapp restart --name "$APP_PROD" --resource-group "rg-bluevelvet"
+            sleep 15
             HOST=$(az webapp show --name "$APP_PROD" --resource-group "rg-bluevelvet" --query "defaultHostName" -o tsv | tr -d '\r\n')
             echo "Verificando salud de https://$HOST/api/v1/platos ..."
             OK=0
-            for i in $(seq 1 18); do
+            for i in $(seq 1 30); do
               STATUS=$(curl -s -o /dev/null -w "%{http_code}" --max-time 10 "https://$HOST/api/v1/platos" || true)
-              echo "Intento $i/18: HTTP $STATUS"
+              echo "Intento $i/30: HTTP $STATUS"
               if [ "$STATUS" = "200" ]; then
                 echo "API PROD en linea y conectada a PostgreSQL!"
                 OK=1
