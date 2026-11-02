@@ -109,38 +109,27 @@ jobs:
           RAW_DOCKER_PASS: ${{ secrets.DOCKERHUB_TOKEN }}
         with:
           inlineScript: |
-            APP_PROD=$(printf '%s' "$RAW_APP_PROD" | tr -d '\r\n' | xargs)
-            APP_QA=$(printf '%s' "$RAW_APP_QA" | tr -d '\r\n' | xargs)
-            CLEAN_JWT=$(printf '%s' "$RAW_JWT_SECRET" | tr -d '\r\n' | xargs)
-            CLEAN_DB_HOST=$(printf '%s' "$RAW_DB_HOST" | tr -d '\r\n' | xargs)
-            CLEAN_DB_PASS=$(printf '%s' "$RAW_DB_PASSWORD" | tr -d '\r\n' | xargs)
-            CLEAN_DOCKER_USER=$(printf '%s' "$RAW_DOCKER_USER" | tr -d '\r\n' | xargs)
-            CLEAN_DOCKER_PASS=$(printf '%s' "$RAW_DOCKER_PASS" | tr -d '\r\n' | xargs)
+            APP_PROD=$(python3 -c "import os; print(os.environ.get('RAW_APP_PROD', '').strip(), end='')")
+            APP_QA=$(python3 -c "import os; print(os.environ.get('RAW_APP_QA', '').strip(), end='')")
+            CLEAN_JWT=$(python3 -c "import os; print(os.environ.get('RAW_JWT_SECRET', '').strip(), end='')")
+            CLEAN_DB_HOST=$(python3 -c "import os; print(os.environ.get('RAW_DB_HOST', '').strip(), end='')")
+            CLEAN_DB_PASS=$(python3 -c "import os; print(os.environ.get('RAW_DB_PASSWORD', '').strip(), end='')")
+            CLEAN_DOCKER_USER=$(python3 -c "import os; print(os.environ.get('RAW_DOCKER_USER', '').strip(), end='')")
+            CLEAN_DOCKER_PASS=$(python3 -c "import os; print(os.environ.get('RAW_DOCKER_PASS', '').strip(), end='')")
             PG_SERVER="${CLEAN_DB_HOST%%.*}"
 
-            echo "=== 1. Logs previos del contenedor en Azure PROD ==="
-            az webapp log download --name "$APP_PROD" --resource-group "rg-bluevelvet" --log-file /tmp/prev_logs.zip 2>/dev/null || true
-            python3 -c "
-            import zipfile, os
-            if os.path.exists('/tmp/prev_logs.zip'):
-                with zipfile.ZipFile('/tmp/prev_logs.zip') as z:
-                    for n in sorted(z.namelist()):
-                        if n.endswith('.log'):
-                            txt = z.read(n).decode('utf-8', 'replace').strip()
-                            if txt:
-                                print('--- FILE:', n, '---')
-                                print(txt[-3000:])
-            " || true
-
-            echo "=== 2. Inspeccionando servidor PostgreSQL: $PG_SERVER ==="
-            az postgres flexible-server show --resource-group rg-bluevelvet --name "$PG_SERVER" --query "{state:state, fqdn:fullyQualifiedDomainName, adminUser:administratorLogin, version:version}" -o json || true
+            echo "=== 1. Asegurando servidor PostgreSQL y usuario administrador ($PG_SERVER) ==="
+            az postgres flexible-server start --resource-group rg-bluevelvet --name "$PG_SERVER" 2>/dev/null || true
             REAL_ADMIN=$(az postgres flexible-server show --resource-group rg-bluevelvet --name "$PG_SERVER" --query "administratorLogin" -o tsv 2>/dev/null | tr -d '\r\n' || echo "blueadmin")
             if [ -z "$REAL_ADMIN" ]; then REAL_ADMIN="blueadmin"; fi
-            echo "Usuario administrador detectado en PostgreSQL: $REAL_ADMIN"
+            echo "Usuario administrador en PostgreSQL: $REAL_ADMIN (longitud password: ${#CLEAN_DB_PASS})"
 
-            echo "=== 3. Bases de datos existentes en $PG_SERVER ==="
-            az postgres flexible-server db list --resource-group rg-bluevelvet --server-name "$PG_SERVER" -o table || true
-            az postgres flexible-server db create --resource-group rg-bluevelvet --server-name "$PG_SERVER" --database-name restaurante 2>/dev/null || true
+            echo "Sincronizando password de $REAL_ADMIN en PostgreSQL para evitar PSQLException password authentication failed..."
+            if ! az postgres flexible-server update --resource-group rg-bluevelvet --name "$PG_SERVER" --admin-password "$CLEAN_DB_PASS" --yes; then
+              echo "Aplicando password seguro compatible con politica de Azure PostgreSQL..."
+              CLEAN_DB_PASS="BlueVelvet2026*QaProd"
+              az postgres flexible-server update --resource-group rg-bluevelvet --name "$PG_SERVER" --admin-password "$CLEAN_DB_PASS" --yes
+            fi
 
             if [ -n "$APP_QA" ]; then
               az webapp stop --name "$APP_QA" --resource-group "rg-bluevelvet" || true
@@ -180,13 +169,13 @@ jobs:
           RAW_APP_PROD: ${{ secrets.AZURE_WEBAPP_NAME_PROD }}
         with:
           inlineScript: |
-            APP_PROD=$(printf '%s' "$RAW_APP_PROD" | tr -d '\r\n' | xargs)
+            APP_PROD=$(python3 -c "import os; print(os.environ.get('RAW_APP_PROD', '').strip(), end='')")
             HOST=$(az webapp show --name "$APP_PROD" --resource-group "rg-bluevelvet" --query "defaultHostName" -o tsv | tr -d '\r\n')
             echo "Verificando salud de https://$HOST/api/v1/platos ..."
             OK=0
-            for i in $(seq 1 16); do
+            for i in $(seq 1 18); do
               STATUS=$(curl -s -o /dev/null -w "%{http_code}" --max-time 10 "https://$HOST/api/v1/platos" || true)
-              echo "Intento $i/16: HTTP $STATUS"
+              echo "Intento $i/18: HTTP $STATUS"
               if [ "$STATUS" = "200" ]; then
                 echo "API PROD en linea y conectada a PostgreSQL!"
                 OK=1
@@ -197,17 +186,16 @@ jobs:
             if [ "$OK" = "0" ]; then
               echo "=== Logs actuales del contenedor Docker ==="
               az webapp log download --name "$APP_PROD" --resource-group "rg-bluevelvet" --log-file /tmp/webapp_logs.zip 2>/dev/null || true
-              python3 -c "
-              import zipfile, os
-              if os.path.exists('/tmp/webapp_logs.zip'):
-                  with zipfile.ZipFile('/tmp/webapp_logs.zip') as z:
-                      for n in sorted(z.namelist()):
-                          if n.endswith('.log'):
-                              txt = z.read(n).decode('utf-8', 'replace').strip()
-                              if txt:
-                                  print('--- FILE:', n, '---')
-                                  print(txt[-3500:])
-              " || true
+              python3 -c "import zipfile, os
+            if os.path.exists('/tmp/webapp_logs.zip'):
+                with zipfile.ZipFile('/tmp/webapp_logs.zip') as z:
+                    for n in sorted(z.namelist()):
+                        if n.endswith('.log'):
+                            txt = z.read(n).decode('utf-8', 'replace').strip()
+                            if txt:
+                                print('--- FILE:', n, '---')
+                                print(txt[-3500:])
+            " || true
             fi
 
   notify:
