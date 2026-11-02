@@ -13,12 +13,16 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import co.edu.eci.dosw.restaurant.mapper.EventoMapper;
 import co.edu.eci.dosw.restaurant.model.domain.EventoRestaurante;
+import co.edu.eci.dosw.restaurant.persistence.document.EventoAuditoria;
 import co.edu.eci.dosw.restaurant.persistence.document.EventoRestauranteDocument;
+import co.edu.eci.dosw.restaurant.repository.AuditoriaRepository;
 import co.edu.eci.dosw.restaurant.repository.EventoRestauranteRepository;
 import co.edu.eci.dosw.restaurant.service.impl.AuditoriaServiceImpl;
 
@@ -27,6 +31,9 @@ class AuditoriaServiceImplTest {
 
     @Mock
     private EventoRestauranteRepository eventoRepository;
+
+    @Mock
+    private AuditoriaRepository auditoriaRepository;
 
     @Mock
     private EventoMapper eventoMapper;
@@ -78,6 +85,32 @@ class AuditoriaServiceImplTest {
     }
 
     @Test
+    @DisplayName("registrarEvento - cuando Mongo falla, captura excepción y retorna evento (degradación elegante)")
+    void registrarEvento_cuandoMongoFalla_retornaEventoSinLanzarExcepcion() {
+        when(eventoMapper.toDocument(evento)).thenReturn(documento);
+        when(eventoRepository.save(documento)).thenThrow(new RuntimeException("MongoDB timeout o desconexión"));
+
+        EventoRestaurante resultado = auditoriaService.registrarEvento(evento);
+
+        assertNotNull(resultado);
+        assertEquals("PLATO_CREADO", resultado.getTipo());
+        verify(eventoRepository).save(documento);
+    }
+
+    @Test
+    @DisplayName("registrarAuditoria - cuando Mongo falla, captura excepción y retorna auditoría (degradación elegante)")
+    void registrarAuditoria_cuandoMongoFalla_retornaAuditoriaSinLanzarExcepcion() {
+        when(auditoriaRepository.save(any(EventoAuditoria.class)))
+                .thenThrow(new RuntimeException("MongoDB caído"));
+
+        EventoAuditoria resultado = auditoriaService.registrarAuditoria("CAMBIO_ESTADO", "50", "En preparación", "bartender");
+
+        assertNotNull(resultado);
+        assertEquals("CAMBIO_ESTADO", resultado.getTipoEvento());
+        assertEquals("50", resultado.getEntidadId());
+    }
+
+    @Test
     @DisplayName("obtenerEventosPorEntidad - consulta por entidadTipo y entidadId")
     void obtenerEventosPorEntidad_retornaListaMapeada() {
         when(eventoRepository.findByEntidadTipoAndEntidadId("PLATO", 10L)).thenReturn(List.of(documento));
@@ -88,6 +121,18 @@ class AuditoriaServiceImplTest {
         assertEquals(1, resultado.size());
         assertEquals("PLATO_CREADO", resultado.get(0).getTipo());
         verify(eventoRepository).findByEntidadTipoAndEntidadId("PLATO", 10L);
+    }
+
+    @Test
+    @DisplayName("obtenerEventosPorEntidad - cuando Mongo falla, retorna lista vacía")
+    void obtenerEventosPorEntidad_cuandoMongoFalla_retornaListaVacia() {
+        when(eventoRepository.findByEntidadTipoAndEntidadId("PLATO", 10L))
+                .thenThrow(new RuntimeException("Mongo connection refused"));
+
+        List<EventoRestaurante> resultado = auditoriaService.obtenerEventosPorEntidad("PLATO", 10L);
+
+        assertNotNull(resultado);
+        assertTrue(resultado.isEmpty());
     }
 
     @Test
@@ -103,5 +148,17 @@ class AuditoriaServiceImplTest {
 
         assertEquals(1, resultado.size());
         verify(eventoRepository).findByTipoAndTimestampBetween("PLATO_CREADO", desde, hasta);
+    }
+
+    @Test
+    @DisplayName("listarUltimosEventos - cuando Mongo falla, retorna lista vacía")
+    void listarUltimosEventos_cuandoMongoFalla_retornaListaVacia() {
+        when(auditoriaRepository.findTop50ByOrderByTimestampDesc())
+                .thenThrow(new RuntimeException("SocketTimeoutException"));
+
+        List<EventoAuditoria> resultado = auditoriaService.listarUltimosEventos();
+
+        assertNotNull(resultado);
+        assertTrue(resultado.isEmpty());
     }
 }

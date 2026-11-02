@@ -92,8 +92,8 @@ public class PedidoController implements PedidoApi {
             @PathVariable Long id,
             @PathVariable Long itemId,
             @RequestBody @Valid ModificarDestiladoDTO dto) {
-        log.info("REST: PATCH /api/v1/pedidos/{}/items/{}/destilado a brandId={}", id, itemId, dto.getNuevoSpiritBrandId());
-        Pedido actualizado = pedidoService.modificarDestilado(id, itemId, dto.getNuevoSpiritBrandId());
+        log.info("REST: PATCH /api/v1/pedidos/{}/items/{}/destilado a brandId={} (motivo={})", id, itemId, dto.getNuevoSpiritBrandId(), dto.getMotivo());
+        Pedido actualizado = pedidoService.modificarDestilado(id, itemId, dto.getNuevoSpiritBrandId(), dto.getMotivo());
         return ResponseEntity.ok(pedidoMapper.toResponse(actualizado));
     }
 }

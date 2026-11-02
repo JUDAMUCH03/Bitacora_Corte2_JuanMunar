@@ -34,27 +34,42 @@ public class AuditoriaServiceImpl implements IAuditoriaService {
             evento.setTimestamp(LocalDateTime.now());
         }
 
-        EventoRestauranteDocument documento = eventoMapper.toDocument(evento);
-        EventoRestauranteDocument guardado = eventoRepository.save(documento);
+        try {
+            EventoRestauranteDocument documento = eventoMapper.toDocument(evento);
+            EventoRestauranteDocument guardado = eventoRepository.save(documento);
 
-        log.debug("Evento persistido en MongoDB con id={}", guardado.getId());
-        return eventoMapper.toDomain(guardado);
+            log.debug("Evento persistido en MongoDB con id={}", guardado.getId());
+            return eventoMapper.toDomain(guardado);
+        } catch (Exception e) {
+            log.warn("Auditoría NoSQL no disponible, se omite evento '{}': {}", evento.getTipo(), e.getMessage());
+            return evento;
+        }
     }
 
     @Override
     public List<EventoRestaurante> obtenerEventosPorEntidad(String entidadTipo, Long entidadId) {
         log.debug("Consultando eventos de auditoría para entidadTipo='{}', entidadId={}", entidadTipo, entidadId);
-        return eventoRepository.findByEntidadTipoAndEntidadId(entidadTipo, entidadId).stream()
-                .map(eventoMapper::toDomain)
-                .toList();
+        try {
+            return eventoRepository.findByEntidadTipoAndEntidadId(entidadTipo, entidadId).stream()
+                    .map(eventoMapper::toDomain)
+                    .toList();
+        } catch (Exception e) {
+            log.warn("Fallo al consultar eventos de auditoría por entidad: {}", e.getMessage());
+            return List.of();
+        }
     }
 
     @Override
     public List<EventoRestaurante> obtenerEventosPorTipoYRango(String tipo, LocalDateTime desde, LocalDateTime hasta) {
         log.debug("Consultando eventos por tipo='{}' entre {} y {}", tipo, desde, hasta);
-        return eventoRepository.findByTipoAndTimestampBetween(tipo, desde, hasta).stream()
-                .map(eventoMapper::toDomain)
-                .toList();
+        try {
+            return eventoRepository.findByTipoAndTimestampBetween(tipo, desde, hasta).stream()
+                    .map(eventoMapper::toDomain)
+                    .toList();
+        } catch (Exception e) {
+            log.warn("Fallo al consultar eventos de auditoría por tipo y rango: {}", e.getMessage());
+            return List.of();
+        }
     }
 
     @Override
@@ -70,12 +85,22 @@ public class AuditoriaServiceImpl implements IAuditoriaService {
                 .timestamp(LocalDateTime.now())
                 .build();
 
-        return auditoriaRepository.save(evento);
+        try {
+            return auditoriaRepository.save(evento);
+        } catch (Exception e) {
+            log.warn("Auditoría NoSQL no disponible, se omite auditoría KDS '{}': {}", tipoEvento, e.getMessage());
+            return evento;
+        }
     }
 
     @Override
     public List<EventoAuditoria> listarUltimosEventos() {
         log.debug("Consultando los últimos 50 eventos de auditoría en MongoDB");
-        return auditoriaRepository.findTop50ByOrderByTimestampDesc();
+        try {
+            return auditoriaRepository.findTop50ByOrderByTimestampDesc();
+        } catch (Exception e) {
+            log.warn("Fallo al consultar últimos eventos de auditoría en MongoDB: {}", e.getMessage());
+            return List.of();
+        }
     }
 }

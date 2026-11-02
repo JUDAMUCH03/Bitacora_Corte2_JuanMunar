@@ -149,7 +149,13 @@ public class PedidoServiceImpl implements IPedidoService {
     @Override
     @Transactional
     public Pedido modificarDestilado(Long pedidoId, Long itemId, Long nuevoSpiritBrandId) {
-        log.info("Modificando destilado de ítem={} en comanda={}", itemId, pedidoId);
+        return modificarDestilado(pedidoId, itemId, nuevoSpiritBrandId, null);
+    }
+
+    @Override
+    @Transactional
+    public Pedido modificarDestilado(Long pedidoId, Long itemId, Long nuevoSpiritBrandId, String motivo) {
+        log.info("Modificando destilado de ítem={} en comanda={} a destilado={} (motivo={})", itemId, pedidoId, nuevoSpiritBrandId, motivo);
         PedidoEntity pedidoEntity = pedidoRepository.findById(pedidoId)
                 .orElseThrow(() -> {
                     log.warn("Pedido no encontrado para modificación de destilado: ID={}", pedidoId);
@@ -180,10 +186,12 @@ public class PedidoServiceImpl implements IPedidoService {
         PedidoEntity guardado = pedidoRepository.save(pedidoEntity);
 
         String usuario = obtenerUsuarioAutenticado();
+        String detalleAuditoria = "Destilado modificado en ítem " + itemId + " a marca " + nuevoSpiritBrandId
+                + (motivo != null && !motivo.isBlank() ? " · Motivo: " + motivo : "");
         auditoriaService.registrarAuditoria(
                 "MODIFICACION_DESTILADO",
                 pedidoId.toString(),
-                "Destilado modificado en ítem " + itemId + " a marca " + nuevoSpiritBrandId,
+                detalleAuditoria,
                 usuario
         );
 

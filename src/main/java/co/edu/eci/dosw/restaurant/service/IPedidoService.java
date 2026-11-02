@@ -23,4 +23,8 @@ public interface IPedidoService {
     Pedido actualizarEstado(Long id, EstadoPedido nuevoEstado);
 
     Pedido modificarDestilado(Long pedidoId, Long itemId, Long nuevoSpiritBrandId);
+
+    default Pedido modificarDestilado(Long pedidoId, Long itemId, Long nuevoSpiritBrandId, String motivo) {
+        return modificarDestilado(pedidoId, itemId, nuevoSpiritBrandId);
+    }
 }

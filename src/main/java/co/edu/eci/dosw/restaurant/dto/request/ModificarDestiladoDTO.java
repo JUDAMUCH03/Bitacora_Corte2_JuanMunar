@@ -17,4 +17,7 @@ public class ModificarDestiladoDTO {
     @NotNull(message = "El nuevo ID de destilado es obligatorio")
     @Schema(description = "ID del nuevo destilado a aplicar", example = "25")
     private Long nuevoSpiritBrandId;
+
+    @Schema(description = "Motivo del cambio de destilado", example = "Preferencia del cliente por destilado botánico ahumado")
+    private String motivo;
 }
