@@ -138,5 +138,5 @@ jobs:
         uses: azure/cli@v2
         with:
           inlineScript: |
-            az webapp restart --name "${{ secrets.AZURE_WEBAPP_NAME_QA }}" --resource-group "rg-bluevelvet"
+            for s in $(az postgres flexible-server list -g rg-bluevelvet --query "[?state!=`'Ready`'].name" -o tsv 2>/dev/null || true); do az postgres flexible-server start -g rg-bluevelvet -n "$s" || true; done; az webapp start --name "${{ secrets.AZURE_WEBAPP_NAME_QA }}" --resource-group "rg-bluevelvet" || true; az webapp restart --name "${{ secrets.AZURE_WEBAPP_NAME_QA }}" --resource-group "rg-bluevelvet"
             az webapp show --name "${{ secrets.AZURE_WEBAPP_NAME_QA }}" --resource-group "rg-bluevelvet" --query "{state:state, defaultHostName:defaultHostName}" -o json

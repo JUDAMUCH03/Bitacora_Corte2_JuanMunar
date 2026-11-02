@@ -76,6 +76,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/v1/platos/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/v1/menu/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/v1/platos").hasAnyRole("CHEF", "ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/api/v1/reservas").permitAll()
                         .anyRequest().authenticated()
                 )
 

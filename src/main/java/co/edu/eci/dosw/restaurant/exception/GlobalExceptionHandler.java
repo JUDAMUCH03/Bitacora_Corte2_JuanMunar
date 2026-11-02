@@ -5,8 +5,10 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.stream.Collectors;
 
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -83,6 +85,35 @@ public class GlobalExceptionHandler {
 
         return ResponseEntity.status(HttpStatus.CONFLICT)
                 .body(buildError(HttpStatus.CONFLICT.value(), "Conflict", ex.getMessage(), request.getRequestURI()));
+    }
+    /**
+     * HTTP 409 - Violación de integridad referencial (p. ej. eliminar un cóctel con pedidos asociados).
+     */
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<ErrorResponseDTO> handleIntegridadDatos(
+            DataIntegrityViolationException ex,
+            HttpServletRequest request) {
+
+        log.warn("Violación de integridad de datos en [{}]: {}", request.getRequestURI(), ex.getMostSpecificCause().getMessage());
+
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(buildError(HttpStatus.CONFLICT.value(), "Conflict",
+                        "La operación no se puede completar porque el registro está en uso o duplicado.", request.getRequestURI()));
+    }
+
+    /**
+     * HTTP 400 - Cuerpo de la solicitud ilegible (JSON malformado o valor de enumeración/fecha inválido).
+     */
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<ErrorResponseDTO> handleCuerpoIlegible(
+            HttpMessageNotReadableException ex,
+            HttpServletRequest request) {
+
+        log.warn("Cuerpo de solicitud ilegible en [{}]: {}", request.getRequestURI(), ex.getMessage());
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(buildError(HttpStatus.BAD_REQUEST.value(), "Bad Request",
+                        "El cuerpo de la solicitud es inválido o contiene valores no reconocidos.", request.getRequestURI()));
     }
 
     /**
