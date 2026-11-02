@@ -89,7 +89,6 @@ jobs:
     name: 🚀 Despliegue Controlado en Azure App Service PROD
     needs: build-and-push-prod
     runs-on: ubuntu-24.04
-    environment: production
     steps:
       - name: Autenticación en Azure con Service Principal
         uses: azure/login@v2
