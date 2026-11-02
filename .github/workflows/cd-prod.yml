@@ -80,6 +80,7 @@ jobs:
           context: .
           file: ./Dockerfile
           push: true
+          provenance: false
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
@@ -104,6 +105,8 @@ jobs:
           RAW_JWT_SECRET: ${{ secrets.JWT_SECRET_PROD }}
           RAW_DB_HOST: ${{ secrets.DB_HOST_QA }}
           RAW_DB_PASSWORD: ${{ secrets.DB_PASSWORD_QA }}
+          RAW_DOCKER_USER: ${{ secrets.DOCKERHUB_USERNAME }}
+          RAW_DOCKER_PASS: ${{ secrets.DOCKERHUB_TOKEN }}
         with:
           inlineScript: |
             APP_PROD=$(printf '%s' "$RAW_APP_PROD" | tr -d '\r\n' | xargs)
@@ -111,20 +114,39 @@ jobs:
             CLEAN_JWT=$(printf '%s' "$RAW_JWT_SECRET" | tr -d '\r\n' | xargs)
             CLEAN_DB_HOST=$(printf '%s' "$RAW_DB_HOST" | tr -d '\r\n' | xargs)
             CLEAN_DB_PASS=$(printf '%s' "$RAW_DB_PASSWORD" | tr -d '\r\n' | xargs)
+            CLEAN_DOCKER_USER=$(printf '%s' "$RAW_DOCKER_USER" | tr -d '\r\n' | xargs)
+            CLEAN_DOCKER_PASS=$(printf '%s' "$RAW_DOCKER_PASS" | tr -d '\r\n' | xargs)
             PG_SERVER="${CLEAN_DB_HOST%%.*}"
 
-            echo "Asegurando disponibilidad y reglas de firewall en PostgreSQL: $PG_SERVER"
-            az postgres flexible-server start --resource-group rg-bluevelvet --name "$PG_SERVER" 2>/dev/null || true
-            az postgres flexible-server firewall-rule create --resource-group rg-bluevelvet --server-name "$PG_SERVER" --name AllowAllWindowsAzureIps --start-ip-address 0.0.0.0 || true
-            az postgres flexible-server firewall-rule create --resource-group rg-bluevelvet --server-name "$PG_SERVER" --name AllowAllPublicIps --start-ip-address 0.0.0.0 --end-ip-address 255.255.255.255 || true
-            az postgres flexible-server firewall-rule list --resource-group rg-bluevelvet --server-name "$PG_SERVER" -o table || true
+            echo "=== 1. Logs previos del contenedor en Azure PROD ==="
+            az webapp log download --name "$APP_PROD" --resource-group "rg-bluevelvet" --log-file /tmp/prev_logs.zip 2>/dev/null || true
+            python3 -c "
+            import zipfile, os
+            if os.path.exists('/tmp/prev_logs.zip'):
+                with zipfile.ZipFile('/tmp/prev_logs.zip') as z:
+                    for n in sorted(z.namelist()):
+                        if n.endswith('.log'):
+                            txt = z.read(n).decode('utf-8', 'replace').strip()
+                            if txt:
+                                print('--- FILE:', n, '---')
+                                print(txt[-3000:])
+            " || true
+
+            echo "=== 2. Inspeccionando servidor PostgreSQL: $PG_SERVER ==="
+            az postgres flexible-server show --resource-group rg-bluevelvet --name "$PG_SERVER" --query "{state:state, fqdn:fullyQualifiedDomainName, adminUser:administratorLogin, version:version}" -o json || true
+            REAL_ADMIN=$(az postgres flexible-server show --resource-group rg-bluevelvet --name "$PG_SERVER" --query "administratorLogin" -o tsv 2>/dev/null | tr -d '\r\n' || echo "blueadmin")
+            if [ -z "$REAL_ADMIN" ]; then REAL_ADMIN="blueadmin"; fi
+            echo "Usuario administrador detectado en PostgreSQL: $REAL_ADMIN"
+
+            echo "=== 3. Bases de datos existentes en $PG_SERVER ==="
+            az postgres flexible-server db list --resource-group rg-bluevelvet --server-name "$PG_SERVER" -o table || true
+            az postgres flexible-server db create --resource-group rg-bluevelvet --server-name "$PG_SERVER" --database-name restaurante 2>/dev/null || true
 
             if [ -n "$APP_QA" ]; then
               az webapp stop --name "$APP_QA" --resource-group "rg-bluevelvet" || true
             fi
 
             az webapp start --name "$APP_PROD" --resource-group "rg-bluevelvet" || true
-            az webapp log config --name "$APP_PROD" --resource-group "rg-bluevelvet" --docker-container-logging filesystem || true
 
             az webapp config appsettings set \
               --name "$APP_PROD" \
@@ -135,12 +157,15 @@ jobs:
                 PORT="8080" \
                 WEBSITES_PORT="8080" \
                 WEBSITES_CONTAINER_START_TIME_LIMIT="1800" \
+                DOCKER_REGISTRY_SERVER_URL="https://index.docker.io/v1" \
+                DOCKER_REGISTRY_SERVER_USERNAME="$CLEAN_DOCKER_USER" \
+                DOCKER_REGISTRY_SERVER_PASSWORD="$CLEAN_DOCKER_PASS" \
                 JAVA_TOOL_OPTIONS="-XX:+TieredCompilation -XX:TieredStopAtLevel=1 -Xms128m -Xmx512m -Djava.security.egd=file:/dev/./urandom" \
                 JWT_SECRET="$CLEAN_JWT" \
                 DB_HOST="$CLEAN_DB_HOST" \
                 DB_PORT="5432" \
                 DB_NAME="restaurante" \
-                DB_USER="blueadmin" \
+                DB_USER="$REAL_ADMIN" \
                 DB_PASSWORD="$CLEAN_DB_PASS"
 
       - name: Desplegar Contenedor Docker en Azure PROD
@@ -159,9 +184,9 @@ jobs:
             HOST=$(az webapp show --name "$APP_PROD" --resource-group "rg-bluevelvet" --query "defaultHostName" -o tsv | tr -d '\r\n')
             echo "Verificando salud de https://$HOST/api/v1/platos ..."
             OK=0
-            for i in $(seq 1 18); do
+            for i in $(seq 1 16); do
               STATUS=$(curl -s -o /dev/null -w "%{http_code}" --max-time 10 "https://$HOST/api/v1/platos" || true)
-              echo "Intento $i/18: HTTP $STATUS"
+              echo "Intento $i/16: HTTP $STATUS"
               if [ "$STATUS" = "200" ]; then
                 echo "API PROD en linea y conectada a PostgreSQL!"
                 OK=1
@@ -170,11 +195,19 @@ jobs:
               sleep 5
             done
             if [ "$OK" = "0" ]; then
-              echo "Descargando logs de contenedor Docker para diagnostico..."
-              az webapp log download --name "$APP_PROD" --resource-group "rg-bluevelvet" --log-file /tmp/webapp_logs.zip || true
-              unzip -l /tmp/webapp_logs.zip || true
-              unzip -p /tmp/webapp_logs.zip "LogFiles/*default_docker.log" | tail -n 100 || true
-              unzip -p /tmp/webapp_logs.zip "LogFiles/*docker.log" | tail -n 100 || true
+              echo "=== Logs actuales del contenedor Docker ==="
+              az webapp log download --name "$APP_PROD" --resource-group "rg-bluevelvet" --log-file /tmp/webapp_logs.zip 2>/dev/null || true
+              python3 -c "
+              import zipfile, os
+              if os.path.exists('/tmp/webapp_logs.zip'):
+                  with zipfile.ZipFile('/tmp/webapp_logs.zip') as z:
+                      for n in sorted(z.namelist()):
+                          if n.endswith('.log'):
+                              txt = z.read(n).decode('utf-8', 'replace').strip()
+                              if txt:
+                                  print('--- FILE:', n, '---')
+                                  print(txt[-3500:])
+              " || true
             fi
 
   notify:
