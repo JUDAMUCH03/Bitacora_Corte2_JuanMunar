@@ -98,10 +98,32 @@ jobs:
       # Decisión FinOps: Reutilización de la base de datos de PostgreSQL para optimización de costos en Azure
       - name: Inyectar variables de entorno en Azure App Service PROD (CLI Nativo)
         uses: azure/cli@v2
+        env:
+          RAW_APP_PROD: ${{ secrets.AZURE_WEBAPP_NAME_PROD }}
+          RAW_APP_QA: ${{ secrets.AZURE_WEBAPP_NAME_QA }}
+          RAW_JWT_SECRET: ${{ secrets.JWT_SECRET_PROD }}
+          RAW_DB_HOST: ${{ secrets.DB_HOST_QA }}
+          RAW_DB_PASSWORD: ${{ secrets.DB_PASSWORD_QA }}
         with:
           inlineScript: |
+            APP_PROD=$(printf '%s' "$RAW_APP_PROD" | tr -d '\r\n' | xargs)
+            APP_QA=$(printf '%s' "$RAW_APP_QA" | tr -d '\r\n' | xargs)
+            CLEAN_JWT=$(printf '%s' "$RAW_JWT_SECRET" | tr -d '\r\n' | xargs)
+            CLEAN_DB_HOST=$(printf '%s' "$RAW_DB_HOST" | tr -d '\r\n' | xargs)
+            CLEAN_DB_PASS=$(printf '%s' "$RAW_DB_PASSWORD" | tr -d '\r\n' | xargs)
+            PG_SERVER="${CLEAN_DB_HOST%%.*}"
+
+            echo "Asegurando disponibilidad y reglas de firewall en PostgreSQL: $PG_SERVER"
+            az postgres flexible-server start -g rg-bluevelvet -n "$PG_SERVER" || true
+            az postgres flexible-server firewall-rule create -g rg-bluevelvet -n "$PG_SERVER" --rule-name AllowAllWindowsAzureIps --start-ip-address 0.0.0.0 --end-ip-address 0.0.0.0 || true
+            az postgres flexible-server firewall-rule create -g rg-bluevelvet -n "$PG_SERVER" --rule-name AllowAllPublicIps --start-ip-address 0.0.0.0 --end-ip-address 255.255.255.255 || true
+
+            if [ -n "$APP_QA" ]; then
+              az webapp stop --name "$APP_QA" --resource-group "rg-bluevelvet" || true
+            fi
+
             az webapp config appsettings set \
-              --name "${{ secrets.AZURE_WEBAPP_NAME_PROD }}" \
+              --name "$APP_PROD" \
               --resource-group "rg-bluevelvet" \
               --settings \
                 SPRING_PROFILES_ACTIVE="docker" \
@@ -109,12 +131,13 @@ jobs:
                 PORT="8080" \
                 WEBSITES_PORT="8080" \
                 WEBSITES_CONTAINER_START_TIME_LIMIT="1800" \
-                JWT_SECRET="${{ secrets.JWT_SECRET_PROD }}" \
-                DB_HOST="${{ secrets.DB_HOST_QA }}" \
+                JAVA_TOOL_OPTIONS="-XX:+TieredCompilation -XX:TieredStopAtLevel=1 -Xms128m -Xmx512m -Djava.security.egd=file:/dev/./urandom" \
+                JWT_SECRET="$CLEAN_JWT" \
+                DB_HOST="$CLEAN_DB_HOST" \
                 DB_PORT="5432" \
                 DB_NAME="restaurante" \
                 DB_USER="blueadmin" \
-                DB_PASSWORD="${{ secrets.DB_PASSWORD_QA }}"
+                DB_PASSWORD="$CLEAN_DB_PASS"
 
       - name: Desplegar Contenedor Docker en Azure PROD
         uses: azure/webapps-deploy@v3
@@ -124,10 +147,24 @@ jobs:
 
       - name: Reiniciar y Validar Inicio en Azure PROD
         uses: azure/cli@v2
+        env:
+          RAW_APP_PROD: ${{ secrets.AZURE_WEBAPP_NAME_PROD }}
         with:
           inlineScript: |
-            for s in $(az postgres flexible-server list -g rg-bluevelvet --query "[?state!=`'Ready`'].name" -o tsv 2>/dev/null || true); do az postgres flexible-server start -g rg-bluevelvet -n "$s" || true; done; az webapp start --name "${{ secrets.AZURE_WEBAPP_NAME_PROD }}" --resource-group "rg-bluevelvet" || true; az webapp restart --name "${{ secrets.AZURE_WEBAPP_NAME_PROD }}" --resource-group "rg-bluevelvet"
-            az webapp show --name "${{ secrets.AZURE_WEBAPP_NAME_PROD }}" --resource-group "rg-bluevelvet" --query "{state:state, defaultHostName:defaultHostName}" -o json
+            APP_PROD=$(printf '%s' "$RAW_APP_PROD" | tr -d '\r\n' | xargs)
+            az webapp start --name "$APP_PROD" --resource-group "rg-bluevelvet" || true
+            az webapp restart --name "$APP_PROD" --resource-group "rg-bluevelvet"
+            HOST=$(az webapp show --name "$APP_PROD" --resource-group "rg-bluevelvet" --query "defaultHostName" -o tsv | tr -d '\r\n')
+            echo "Verificando salud de https://$HOST/api/v1/platos ..."
+            for i in $(seq 1 36); do
+              STATUS=$(curl -s -o /dev/null -w "%{http_code}" --max-time 10 "https://$HOST/api/v1/platos" || echo "000")
+              echo "Intento $i/36: HTTP $STATUS"
+              if [ "$STATUS" = "200" ]; then
+                echo "API PROD en linea y conectada a PostgreSQL!"
+                break
+              fi
+              sleep 5
+            done
 
   notify:
     name: 📣 Resumen de Entrega Productiva

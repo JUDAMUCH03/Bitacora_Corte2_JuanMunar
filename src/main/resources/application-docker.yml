@@ -7,6 +7,8 @@ spring:
     hikari:
       connection-timeout: 10000
       initialization-fail-timeout: -1
+      maximum-pool-size: 5
+      minimum-idle: 1
   data:
     mongodb:
       auto-index-creation: false
