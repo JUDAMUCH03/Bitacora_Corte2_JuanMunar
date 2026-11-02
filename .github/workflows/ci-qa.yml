@@ -124,8 +124,8 @@ jobs:
             CLEAN_DB_PASS=$(printf '%s' "$RAW_DB_PASSWORD" | tr -d '\r\n' | xargs)
             PG_SERVER="${CLEAN_DB_HOST%%.*}"
 
-            az postgres flexible-server start -g rg-bluevelvet -n "$PG_SERVER" || true
-            az postgres flexible-server firewall-rule create -g rg-bluevelvet -n "$PG_SERVER" --rule-name AllowAllWindowsAzureIps --start-ip-address 0.0.0.0 --end-ip-address 0.0.0.0 || true
+            az postgres flexible-server start --resource-group rg-bluevelvet --name "$PG_SERVER" 2>/dev/null || true
+            az postgres flexible-server firewall-rule create --resource-group rg-bluevelvet --server-name "$PG_SERVER" --name AllowAllWindowsAzureIps --start-ip-address 0.0.0.0 || true
 
             az webapp config appsettings set \
               --name "$APP_QA" \
@@ -158,4 +158,3 @@ jobs:
           inlineScript: |
             APP_QA=$(printf '%s' "$RAW_APP_QA" | tr -d '\r\n' | xargs)
             az webapp start --name "$APP_QA" --resource-group "rg-bluevelvet" || true
-            az webapp restart --name "$APP_QA" --resource-group "rg-bluevelvet"

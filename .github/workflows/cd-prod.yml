@@ -114,13 +114,17 @@ jobs:
             PG_SERVER="${CLEAN_DB_HOST%%.*}"
 
             echo "Asegurando disponibilidad y reglas de firewall en PostgreSQL: $PG_SERVER"
-            az postgres flexible-server start -g rg-bluevelvet -n "$PG_SERVER" || true
-            az postgres flexible-server firewall-rule create -g rg-bluevelvet -n "$PG_SERVER" --rule-name AllowAllWindowsAzureIps --start-ip-address 0.0.0.0 --end-ip-address 0.0.0.0 || true
-            az postgres flexible-server firewall-rule create -g rg-bluevelvet -n "$PG_SERVER" --rule-name AllowAllPublicIps --start-ip-address 0.0.0.0 --end-ip-address 255.255.255.255 || true
+            az postgres flexible-server start --resource-group rg-bluevelvet --name "$PG_SERVER" 2>/dev/null || true
+            az postgres flexible-server firewall-rule create --resource-group rg-bluevelvet --server-name "$PG_SERVER" --name AllowAllWindowsAzureIps --start-ip-address 0.0.0.0 || true
+            az postgres flexible-server firewall-rule create --resource-group rg-bluevelvet --server-name "$PG_SERVER" --name AllowAllPublicIps --start-ip-address 0.0.0.0 --end-ip-address 255.255.255.255 || true
+            az postgres flexible-server firewall-rule list --resource-group rg-bluevelvet --server-name "$PG_SERVER" -o table || true
 
             if [ -n "$APP_QA" ]; then
               az webapp stop --name "$APP_QA" --resource-group "rg-bluevelvet" || true
             fi
+
+            az webapp start --name "$APP_PROD" --resource-group "rg-bluevelvet" || true
+            az webapp log config --name "$APP_PROD" --resource-group "rg-bluevelvet" --docker-container-logging filesystem || true
 
             az webapp config appsettings set \
               --name "$APP_PROD" \
@@ -145,26 +149,33 @@ jobs:
           app-name: ${{ secrets.AZURE_WEBAPP_NAME_PROD }}
           images: ${{ env.IMAGE_NAME }}:prod-latest
 
-      - name: Reiniciar y Validar Inicio en Azure PROD
+      - name: Validar Salud en Azure PROD
         uses: azure/cli@v2
         env:
           RAW_APP_PROD: ${{ secrets.AZURE_WEBAPP_NAME_PROD }}
         with:
           inlineScript: |
             APP_PROD=$(printf '%s' "$RAW_APP_PROD" | tr -d '\r\n' | xargs)
-            az webapp start --name "$APP_PROD" --resource-group "rg-bluevelvet" || true
-            az webapp restart --name "$APP_PROD" --resource-group "rg-bluevelvet"
             HOST=$(az webapp show --name "$APP_PROD" --resource-group "rg-bluevelvet" --query "defaultHostName" -o tsv | tr -d '\r\n')
             echo "Verificando salud de https://$HOST/api/v1/platos ..."
-            for i in $(seq 1 36); do
-              STATUS=$(curl -s -o /dev/null -w "%{http_code}" --max-time 10 "https://$HOST/api/v1/platos" || echo "000")
-              echo "Intento $i/36: HTTP $STATUS"
+            OK=0
+            for i in $(seq 1 18); do
+              STATUS=$(curl -s -o /dev/null -w "%{http_code}" --max-time 10 "https://$HOST/api/v1/platos" || true)
+              echo "Intento $i/18: HTTP $STATUS"
               if [ "$STATUS" = "200" ]; then
                 echo "API PROD en linea y conectada a PostgreSQL!"
+                OK=1
                 break
               fi
               sleep 5
             done
+            if [ "$OK" = "0" ]; then
+              echo "Descargando logs de contenedor Docker para diagnostico..."
+              az webapp log download --name "$APP_PROD" --resource-group "rg-bluevelvet" --log-file /tmp/webapp_logs.zip || true
+              unzip -l /tmp/webapp_logs.zip || true
+              unzip -p /tmp/webapp_logs.zip "LogFiles/*default_docker.log" | tail -n 100 || true
+              unzip -p /tmp/webapp_logs.zip "LogFiles/*docker.log" | tail -n 100 || true
+            fi
 
   notify:
     name: 📣 Resumen de Entrega Productiva
