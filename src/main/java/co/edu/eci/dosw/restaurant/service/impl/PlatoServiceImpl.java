@@ -79,12 +79,14 @@ public class PlatoServiceImpl implements IPlatoService {
         PlatoEntity entity = entityMapper.toEntity(plato);
         PlatoEntity guardado = platoRepository.save(entity);
 
-        log.info("Producto creado exitosamente: ID={}, Nombre='{}'", guardado.getId(), guardado.getNombre());
+        log.info("Producto creado exitosamente: ID={}, Nombre='{}', Graduación={}",
+                guardado.getId(), guardado.getNombre(), guardado.getGraduacionAlcoholica());
 
         Map<String, Object> metadatos = new HashMap<>();
         metadatos.put("nombre", guardado.getNombre());
         metadatos.put("precio", guardado.getPrecio());
         metadatos.put("categoria", guardado.getCategoria());
+        metadatos.put("graduacionAlcoholica", guardado.getGraduacionAlcoholica());
 
         auditoriaService.registrarEvento(EventoRestaurante.builder()
                 .tipo("PLATO_CREADO")
@@ -115,6 +117,9 @@ public class PlatoServiceImpl implements IPlatoService {
         entity.setPrecio(nuevosDatos.getPrecio());
         entity.setCategoria(nuevosDatos.getCategoria());
         entity.setDescripcion(nuevosDatos.getDescripcion());
+        if (nuevosDatos.getGraduacionAlcoholica() != null) {
+            entity.setGraduacionAlcoholica(nuevosDatos.getGraduacionAlcoholica());
+        }
         if (nuevosDatos.getDisponible() != null) {
             entity.setDisponible(nuevosDatos.getDisponible());
         }

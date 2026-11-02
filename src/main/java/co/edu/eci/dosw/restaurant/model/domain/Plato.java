@@ -23,6 +23,7 @@ public class Plato {
     private String categoria;
     private Boolean disponible;
     private String descripcion;
+    private Double graduacionAlcoholica;
 
     // ── Comportamiento de negocio intrínseco del objeto ──
 

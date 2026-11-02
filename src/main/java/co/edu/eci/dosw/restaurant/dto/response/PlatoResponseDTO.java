@@ -21,4 +21,5 @@ public class PlatoResponseDTO {
     private String categoria;
     private Boolean disponible;
     private String descripcion;
+    private Double graduacionAlcoholica;
 }

@@ -1,5 +1,7 @@
 package co.edu.eci.dosw.restaurant.dto.request;
 
+import jakarta.validation.constraints.DecimalMax;
+import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
@@ -34,4 +36,8 @@ public class PlatoRequestDTO {
     // Campo opcional: sin @NotNull
     @Size(max = 255, message = "La descripción no puede superar 255 caracteres")
     private String descripcion;
+
+    @DecimalMin(value = "0.0", message = "La graduación alcohólica no puede ser negativa")
+    @DecimalMax(value = "100.0", message = "La graduación alcohólica no puede superar 100%")
+    private Double graduacionAlcoholica;
 }

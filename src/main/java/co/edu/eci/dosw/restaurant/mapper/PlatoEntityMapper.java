@@ -12,6 +12,5 @@ public interface PlatoEntityMapper {
     Plato toDomain(PlatoEntity entity);
 
     @Mapping(target = "creadoEn", ignore = true)
-    @Mapping(target = "graduacionAlcoholica", ignore = true)
     PlatoEntity toEntity(Plato domain);
 }
